@@ -22,6 +22,7 @@ Step 3 of 4: scrolling text and wall protection. Next: dedicated server test and
 The font is 5x7. On a taller wall the text is centered vertically; on a lower one the bottom rows are cut off.
 While a billboard is shown, its wall is protected: players, explosions, pistons, mobs and `/setblock`
 cannot change it, so pixel blocks can't be mined. Blocks attached to the wall (levers, torches, vines) stay put.
+Redstone blocks work as pixels: lamps or dust next to the wall follow the text, like a punch card.
 Scrolling pauses while the wall's chunks are not loaded.
 Walls containing chests, signs or other block entities are refused. Maximum wall size is 256 x 64.
 The original blocks are saved in the world (`data/billboard/wall_backups.dat`), so a crash does not lose them.

@@ -11,10 +11,11 @@ import net.minecraft.world.level.block.state.BlockState;
  */
 public final class BillboardPainter {
 	/**
-	 * Clients see the change, but neighbours get no shape update: levers, torches or vines
-	 * attached to the wall stay where they are while the blocks behind them are swapped.
+	 * Neighbours hear about the change, so redstone blocks as pixels power lamps and dust next to
+	 * the wall like a punch card. Shape updates are skipped: levers, torches or vines attached to
+	 * the wall stay where they are while the blocks behind them are swapped.
 	 */
-	static final int WALL_UPDATE = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
+	static final int WALL_UPDATE = Block.UPDATE_NEIGHBORS | Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
 	private BillboardPainter() {
 	}
