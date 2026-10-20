@@ -20,6 +20,16 @@ public final class BillboardPainter {
 	private BillboardPainter() {
 	}
 
+	/**
+	 * Sets one wall block and lets it look at its own neighbours once, like a block placed by hand would:
+	 * a redstone lamp used as pixel lights up at once if a lever or redstone block behind it powers it.
+	 */
+	static void set(ServerLevel level, BlockPos pos, BlockState state) {
+		if (level.setBlock(pos, state, WALL_UPDATE)) {
+			level.neighborChanged(pos, state.getBlock(), null);
+		}
+	}
+
 	/** Number of scroll steps until the text shows the same again: text, then a wall-wide gap. */
 	public static int period(Wall wall, boolean[][] bitmap) {
 		return bitmap.length + wall.width();
@@ -51,7 +61,7 @@ public final class BillboardPainter {
 			for (int column = 0; column < wall.width(); column++) {
 				for (int row = 0; row < wall.height(); row++) {
 					if (lit(wall, bitmap, offset, column, row)) {
-						level.setBlock(wall.pixel(column, row), pixel, WALL_UPDATE);
+						set(level, wall.pixel(column, row), pixel);
 					}
 				}
 			}
@@ -71,7 +81,7 @@ public final class BillboardPainter {
 					BlockPos pos = wall.pixel(column, row);
 					BlockState target = now ? pixel : backups.original(engine, pos);
 					if (target != null) {
-						level.setBlock(pos, target, WALL_UPDATE);
+						set(level, pos, target);
 					}
 				}
 			}

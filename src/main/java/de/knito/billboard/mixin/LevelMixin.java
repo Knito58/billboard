@@ -12,12 +12,14 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import de.knito.billboard.wall.ProtectedAreas;
 
-/** Catch-all: no block of an active billboard changes unless the mod does it. */
+/** Catch-all: no block of an active billboard is replaced or destroyed unless the mod does it. */
 @Mixin(Level.class)
 public abstract class LevelMixin {
 	@Inject(method = "setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;II)Z", at = @At("HEAD"), cancellable = true)
 	private void billboard$protectSetBlock(BlockPos pos, BlockState state, int flags, int updateLimit, CallbackInfoReturnable<Boolean> cir) {
-		if (ProtectedAreas.isProtected((Level) (Object) this, pos)) {
+		Level level = (Level) (Object) this;
+		// A block may still change its own state (a lamp lighting up); it just can't become another block.
+		if (ProtectedAreas.isProtected(level, pos) && !level.getBlockState(pos).is(state.getBlock())) {
 			cir.setReturnValue(false);
 		}
 	}

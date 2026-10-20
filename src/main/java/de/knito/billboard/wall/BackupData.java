@@ -66,7 +66,7 @@ public class BackupData extends SavedData {
 				}
 				BlockState original = palette.get(index);
 				if (level.getBlockState(pos) != original) {
-					level.setBlock(pos, original, BillboardPainter.WALL_UPDATE);
+					BillboardPainter.set(level, pos.immutable(), original);
 				}
 			}
 		}

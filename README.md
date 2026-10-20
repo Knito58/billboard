@@ -23,6 +23,8 @@ The font is 5x7. On a taller wall the text is centered vertically; on a lower on
 While a billboard is shown, its wall is protected: players, explosions, pistons, mobs and `/setblock`
 cannot change it, so pixel blocks can't be mined. Blocks attached to the wall (levers, torches, vines) stay put.
 Redstone blocks work as pixels: lamps or dust next to the wall follow the text, like a punch card.
+The other way round works too: redstone lamps as pixels light up where levers or redstone blocks sit behind the wall.
+Blocks in the wall may still change their own state (a lamp lighting up), they just can't be replaced.
 Scrolling pauses while the wall's chunks are not loaded.
 Walls containing chests, signs or other block entities are refused. Maximum wall size is 256 x 64.
 The original blocks are saved in the world (`data/billboard/wall_backups.dat`), so a crash does not lose them.
