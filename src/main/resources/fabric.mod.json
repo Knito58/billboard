@@ -1,0 +1,29 @@
+{
+	"schemaVersion": 1,
+	"id": "billboard",
+	"version": "${version}",
+	"name": "Billboard",
+	"description": "Turns any flat wall into a scrolling text billboard made of blocks.",
+	"authors": [
+		"Knito58"
+	],
+	"contact": {
+		"sources": "https://github.com/Knito58/billboard"
+	},
+	"license": "MIT",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"de.knito.billboard.Billboard"
+		],
+		"client": [
+			"de.knito.billboard.client.BillboardClient"
+		]
+	},
+	"depends": {
+		"fabricloader": ">=0.19.5",
+		"minecraft": "~26.3",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}
