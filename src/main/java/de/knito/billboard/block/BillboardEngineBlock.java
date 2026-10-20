@@ -6,8 +6,12 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+
+import de.knito.billboard.ModBlockEntities;
 
 public class BillboardEngineBlock extends BaseEntityBlock {
 	public BillboardEngineBlock(Properties properties) {
@@ -20,6 +24,11 @@ public class BillboardEngineBlock extends BaseEntityBlock {
 			player.openMenu(engine);
 		}
 		return InteractionResult.SUCCESS;
+	}
+
+	@Override
+	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
+		return level.isClientSide() ? null : createTickerHelper(type, ModBlockEntities.BILLBOARD_ENGINE, BillboardEngineBlockEntity::serverTick);
 	}
 
 	@Override

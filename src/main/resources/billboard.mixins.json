@@ -1,0 +1,13 @@
+{
+	"required": true,
+	"package": "de.knito.billboard.mixin",
+	"compatibilityLevel": "JAVA_25",
+	"mixins": [
+		"LevelMixin",
+		"PistonStructureResolverMixin",
+		"ServerExplosionMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

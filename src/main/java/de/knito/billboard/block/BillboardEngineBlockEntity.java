@@ -18,6 +18,7 @@ import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.EmptyBlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.Fallable;
@@ -61,6 +62,12 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 	private String text = "";
 	private int speed = 5;
 	private boolean running;
+	/** What the wall shows, which may differ from the text box until Go is pressed again. */
+	private String shownText = "";
+	private BlockState pixel;
+	private int offset;
+	private int ticks;
+	private boolean[][] bitmap;
 
 	/** Synced to the open screen: 0 = speed, 1 = 1 while the wall shows text, 2 = 1 while running. */
 	private final ContainerData data = new ContainerData() {
@@ -167,11 +174,61 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 		// Put back an older billboard of this engine first, so the backup always holds the real wall.
 		backups.restore(serverLevel, worldPosition);
 		backups.backup(serverLevel, worldPosition, wall);
-		BlockState pixel = ((BlockItem) pixelStack.getItem()).getBlock().defaultBlockState();
-		BillboardPainter.paintStatic(serverLevel, wall, text, pixel);
+		shownText = text;
+		bitmap = BillboardFont.render(shownText);
+		pixel = ((BlockItem) pixelStack.getItem()).getBlock().defaultBlockState();
+		offset = BillboardPainter.startOffset(wall);
+		ticks = 0;
+		BillboardPainter.paint(serverLevel, wall, bitmap, offset, pixel);
 		running = true;
 		setChanged();
 		return Component.translatable("message.billboard.started", wall.width(), wall.height());
+	}
+
+	/** Ticks between two scroll steps: speed 1 = one column per second, speed 10 = ten per second. */
+	private int interval() {
+		return 22 - 2 * speed;
+	}
+
+	public static void serverTick(Level level, BlockPos pos, BlockState state, BillboardEngineBlockEntity engine) {
+		if (engine.running && level instanceof ServerLevel serverLevel) {
+			engine.scroll(serverLevel);
+		}
+	}
+
+	private void scroll(ServerLevel serverLevel) {
+		if (++ticks < interval()) {
+			return;
+		}
+		ticks = 0;
+
+		BackupData backups = BackupData.get(serverLevel);
+		Wall wall = backups.wallOf(worldPosition);
+		if (wall == null || pixel == null) {
+			running = false;
+			setChanged();
+			return;
+		}
+		if (!isLoaded(serverLevel, wall)) {
+			// Wait until the player comes back; loading chunks just to scroll would keep them alive forever.
+			return;
+		}
+		if (bitmap == null) {
+			bitmap = BillboardFont.render(shownText);
+		}
+		int next = (offset + 1) % BillboardPainter.period(wall, bitmap);
+		BillboardPainter.step(serverLevel, worldPosition, backups, wall, bitmap, offset, next, pixel);
+		offset = next;
+		setChanged();
+	}
+
+	private static boolean isLoaded(ServerLevel serverLevel, Wall wall) {
+		for (int column = 0; column < wall.width(); column += 16) {
+			if (!serverLevel.isLoaded(wall.pixel(column, 0))) {
+				return false;
+			}
+		}
+		return serverLevel.isLoaded(wall.pixel(wall.width() - 1, 0));
 	}
 
 	private Optional<Component> checkWallBlocks(ServerLevel serverLevel, Wall wall) {
@@ -222,6 +279,10 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 		text = cleanText(input.getStringOr("text", ""));
 		speed = Math.clamp(input.getIntOr("speed", 5), MIN_SPEED, MAX_SPEED);
 		running = input.getBooleanOr("running", false);
+		shownText = cleanText(input.getStringOr("shown_text", ""));
+		pixel = input.read("pixel", BlockState.CODEC).orElse(null);
+		offset = Math.max(0, input.getIntOr("offset", 0));
+		bitmap = null;
 	}
 
 	@Override
@@ -231,6 +292,11 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 		output.putString("text", text);
 		output.putInt("speed", speed);
 		output.putBoolean("running", running);
+		output.putString("shown_text", shownText);
+		if (pixel != null) {
+			output.store("pixel", BlockState.CODEC, pixel);
+		}
+		output.putInt("offset", offset);
 	}
 
 	@Override

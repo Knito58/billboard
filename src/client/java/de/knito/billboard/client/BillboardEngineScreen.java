@@ -109,10 +109,19 @@ public class BillboardEngineScreen extends AbstractContainerScreen<BillboardEngi
 		super.extractLabels(graphics, xm, ym);
 		graphics.centeredText(font, Component.translatable("gui.billboard.speed", currentSpeed()), 112, 46, 0xFFFFFFFF);
 
-		Component state = menu.isShowing()
-				? Component.translatable("gui.billboard.state_showing")
-				: Component.translatable("gui.billboard.state_idle");
-		graphics.text(font, state, imageWidth - 8 - font.width(state), titleLabelY, menu.isShowing() ? 0xFF207020 : LABEL_COLOR, false);
+		Component state;
+		int stateColor;
+		if (menu.isShowing() && menu.isRunning()) {
+			state = Component.translatable("gui.billboard.state_running");
+			stateColor = 0xFF207020;
+		} else if (menu.isShowing()) {
+			state = Component.translatable("gui.billboard.state_stopped");
+			stateColor = 0xFF806000;
+		} else {
+			state = Component.translatable("gui.billboard.state_idle");
+			stateColor = LABEL_COLOR;
+		}
+		graphics.text(font, state, imageWidth - 8 - font.width(state), titleLabelY, stateColor, false);
 
 		if (!status.getString().isEmpty()) {
 			var lines = font.split(status, imageWidth - 16);
