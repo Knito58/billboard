@@ -4,7 +4,7 @@ Fabric mod for Minecraft: turns any flat wall into a scrolling text billboard ma
 
 ## Status
 
-Step 3 of 4: scrolling text and wall protection. Next: dedicated server test and release.
+Step 4 of 4: server tested, engine texture done. Now: control by sign, redstone and ComputerCraft. Next: release.
 
 ## How to use
 
@@ -29,6 +29,30 @@ Blocks in the wall may still change their own state (a lamp lighting up), they j
 Scrolling pauses while the wall's chunks are not loaded.
 Walls containing chests, signs or other block entities are refused. Maximum wall size is 256 x 64.
 The original blocks are saved in the world (`data/billboard/wall_backups.dat`), so a crash does not lose them.
+
+## Control by sign and redstone
+
+No other mod needed. Put a sign on the engine (any side, or on top) and give the engine a redstone pulse
+(button, lever, observer...). The engine reads the sign, joins its lines with spaces and presses **Go**.
+While it runs, it checks the sign every second: when the text changes, the billboard restarts with the new text.
+That also works with Create's Display Link, which can write into vanilla signs.
+A pulse while the same text is already running changes nothing. Speed, Stop and Restore stay in the GUI.
+Wax the sign with a honeycomb so nobody can edit it by accident; the engine still reads it.
+
+## Control by ComputerCraft
+
+With [CC: Tweaked](https://modrinth.com/mod/cc-tweaked) installed, the engine is a peripheral of type `billboard_engine`
+(computer next to it, or connected by a wired modem). It is optional; Billboard runs fine without CC.
+
+```lua
+local b = peripheral.find("billboard_engine")
+b.setText("Hello " .. textutils.formatTime(os.time()))  -- up to 64 characters, used by the next go()
+b.setSpeed(7)          -- 1 to 10, takes effect at once
+print(b.go())          -- true, or false plus a reason such as "need_wand", "need_pixel", "overlap"
+b.stop()               -- freeze the text
+b.restore()            -- put the wall back
+b.getText(), b.getSpeed(), b.isRunning(), b.isShowing()
+```
 
 ## Build and run (Linux)
 
