@@ -3,6 +3,7 @@ package de.knito.billboard.block;
 import java.util.Optional;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -23,6 +24,9 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.Fallable;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.SignBlockEntity;
+import net.minecraft.world.level.block.entity.SignText;
+import net.minecraft.world.level.block.entity.SignTextSlot;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -68,6 +72,10 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 	private int offset;
 	private int ticks;
 	private boolean[][] bitmap;
+	/** Whether the engine had a redstone signal at the last neighbour update, so only a rising edge counts. */
+	private boolean powered;
+	/** Text of the attached sign when it was last read; a running engine follows changes to it. */
+	private String signText = "";
 
 	/** Synced to the open screen: 0 = speed, 1 = 1 while the wall shows text, 2 = 1 while running. */
 	private final ContainerData data = new ContainerData() {
@@ -192,8 +200,78 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 
 	public static void serverTick(Level level, BlockPos pos, BlockState state, BillboardEngineBlockEntity engine) {
 		if (engine.running && level instanceof ServerLevel serverLevel) {
-			engine.scroll(serverLevel);
+			if (level.getGameTime() % 20 == 0) {
+				engine.followSign();
+			}
+			if (engine.running) {
+				engine.scroll(serverLevel);
+			}
 		}
+	}
+
+	/** Called by the block on neighbour updates. A rising redstone edge reads the sign and starts the billboard. */
+	public void setPowered(boolean newPowered) {
+		if (newPowered == powered) {
+			return;
+		}
+		powered = newPowered;
+		setChanged();
+		if (!powered) {
+			return;
+		}
+		String sign = readSign();
+		if (sign != null) {
+			signText = sign;
+			if (!sign.isBlank()) {
+				text = cleanText(sign);
+			}
+		}
+		// A pulse while the same text already runs changes nothing; this also stops redstone pixels next to the engine from restarting it.
+		if (!(running && text.equals(shownText))) {
+			go();
+		}
+	}
+
+	/** While running, a changed sign (edited by a player or a Create Display Link) restarts the billboard with the new text. */
+	private void followSign() {
+		String sign = readSign();
+		if (sign == null || sign.equals(signText)) {
+			return;
+		}
+		signText = sign;
+		setChanged();
+		if (!sign.isBlank()) {
+			text = cleanText(sign);
+			go();
+		}
+	}
+
+	/** Text of the first sign touching the engine, lines joined with spaces; front side, or back side if the front is empty. Null if there is no sign. */
+	private String readSign() {
+		if (level == null) {
+			return null;
+		}
+		for (Direction direction : Direction.values()) {
+			if (level.getBlockEntity(worldPosition.relative(direction)) instanceof SignBlockEntity sign) {
+				String front = joinLines(sign.getText(SignTextSlot.FRONT));
+				return front.isEmpty() ? joinLines(sign.getText(SignTextSlot.BACK)) : front;
+			}
+		}
+		return null;
+	}
+
+	private static String joinLines(SignText signText) {
+		StringBuilder sb = new StringBuilder();
+		for (Component line : signText.getMessages(false)) {
+			String part = line.getString().strip();
+			if (!part.isEmpty()) {
+				if (!sb.isEmpty()) {
+					sb.append(' ');
+				}
+				sb.append(part);
+			}
+		}
+		return sb.toString();
 	}
 
 	private void scroll(ServerLevel serverLevel) {
@@ -244,6 +322,22 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 		return Optional.empty();
 	}
 
+	public String text() {
+		return text;
+	}
+
+	public int speed() {
+		return speed;
+	}
+
+	public boolean isRunning() {
+		return running;
+	}
+
+	public boolean isShowingText() {
+		return isShowing();
+	}
+
 	public Component stop() {
 		if (!running) {
 			return Component.translatable("message.billboard.not_running");
@@ -282,6 +376,8 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 		shownText = cleanText(input.getStringOr("shown_text", ""));
 		pixel = input.read("pixel", BlockState.CODEC).orElse(null);
 		offset = Math.max(0, input.getIntOr("offset", 0));
+		powered = input.getBooleanOr("powered", false);
+		signText = input.getStringOr("sign_text", "");
 		bitmap = null;
 	}
 
@@ -297,6 +393,8 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 			output.store("pixel", BlockState.CODEC, pixel);
 		}
 		output.putInt("offset", offset);
+		output.putBoolean("powered", powered);
+		output.putString("sign_text", signText);
 	}
 
 	@Override
