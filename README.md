@@ -65,8 +65,8 @@ Requires Java 25.
 ./gradlew build        # mod jar ends up in build/libs/
 ```
 
-To publish a release: set `version` in `gradle.properties`, update `CHANGELOG.md`, then push a tag
-`v<version>` (e.g. `v1.0.0`). GitHub Actions builds the jar and creates the release page.
+To publish a release: set `version` in `gradle.properties`, update `CHANGELOG.md`, merge to main, then
+on GitHub open *Actions → Release → Run workflow*. It builds the jar, tags `v<version>` and creates the release page.
 
 In IntelliJ IDEA: *File → Open* the project folder, wait for the Gradle import, then run the
 `Minecraft Client` run configuration.
