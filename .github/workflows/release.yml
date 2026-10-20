@@ -1,7 +1,9 @@
-# Builds the mod and publishes a GitHub release when a version tag (v1.0.0, ...) is pushed.
+# Builds the mod and publishes a GitHub release for the version in gradle.properties.
+# Start it with "Run workflow" on the Actions tab, or by pushing a tag v<version>.
 name: Release
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - "v*"
@@ -19,15 +21,21 @@ jobs:
           distribution: temurin
           java-version: "25"
       - uses: gradle/actions/setup-gradle@v4
-      - name: Check that the tag matches the mod version
+      - name: Read the mod version
         run: |
           version=$(grep '^version=' gradle.properties | cut -d= -f2)
-          test "v$version" = "$GITHUB_REF_NAME" || { echo "Tag $GITHUB_REF_NAME does not match version=$version in gradle.properties"; exit 1; }
+          echo "TAG=v$version" >> "$GITHUB_ENV"
+          if [ "$GITHUB_REF_TYPE" = tag ] && [ "$GITHUB_REF_NAME" != "v$version" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match version=$version in gradle.properties"
+            exit 1
+          fi
       - name: Build
         run: ./gradlew build --no-configuration-cache
       - uses: softprops/action-gh-release@v2
         with:
-          name: Billboard ${{ github.ref_name }} for Minecraft 26.3
+          tag_name: ${{ env.TAG }}
+          target_commitish: ${{ github.sha }}
+          name: Billboard ${{ env.TAG }} for Minecraft 26.3
           body_path: CHANGELOG.md
           files: |
             build/libs/billboard-*.jar
