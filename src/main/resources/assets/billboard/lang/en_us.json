@@ -35,5 +35,10 @@
 	"message.billboard.nothing_to_restore": "Nothing to restore.",
 	"gui.billboard.state_running": "Running",
 	"gui.billboard.state_stopped": "Stopped",
-	"message.billboard.protected": "This block belongs to an active billboard. Press Restore on its engine first."
+	"message.billboard.protected": "This block belongs to an active billboard. Press Restore on its engine first.",
+	"tooltip.billboard.engine.hint": "Hold Shift for details",
+	"tooltip.billboard.engine.1": "Place behind a wall marked with the Selector Wand.",
+	"tooltip.billboard.engine.2": "Sign on the engine + redstone pulse: shows the sign.",
+	"tooltip.billboard.engine.3": "While running, follows changes to that sign.",
+	"tooltip.billboard.engine.4": "ComputerCraft: peripheral \"billboard_engine\"."
 }

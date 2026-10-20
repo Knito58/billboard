@@ -35,5 +35,10 @@
 	"message.billboard.nothing_to_restore": "Nichts wiederherzustellen.",
 	"gui.billboard.state_running": "Läuft",
 	"gui.billboard.state_stopped": "Angehalten",
-	"message.billboard.protected": "Dieser Block gehört zu einem aktiven Billboard. Erst an der Steuerung Zurück drücken."
+	"message.billboard.protected": "Dieser Block gehört zu einem aktiven Billboard. Erst an der Steuerung Zurück drücken.",
+	"tooltip.billboard.engine.hint": "Shift drücken für Details",
+	"tooltip.billboard.engine.1": "Hinter eine mit dem Markierstab markierte Wand setzen.",
+	"tooltip.billboard.engine.2": "Schild an der Steuerung + Redstone-Impuls: zeigt das Schild.",
+	"tooltip.billboard.engine.3": "Folgt im Betrieb Änderungen an diesem Schild.",
+	"tooltip.billboard.engine.4": "ComputerCraft: Peripherie \"billboard_engine\"."
 }
