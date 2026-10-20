@@ -2,9 +2,11 @@
 
 Fabric mod for Minecraft: turns any flat wall into a scrolling text billboard made of blocks.
 
-## Status
+## Install
 
-Step 4 of 4: server tested, engine texture done. Now: control by sign, redstone and ComputerCraft. Next: release.
+Download the jar from [Releases](https://github.com/Knito58/billboard/releases) and put it into the `mods` folder
+together with [Fabric API](https://modrinth.com/mod/fabric-api). Minecraft 26.3, Fabric Loader 0.19.5+, Java 25.
+On a server, install it on the server and on every client. [CC: Tweaked](https://modrinth.com/mod/cc-tweaked) is optional.
 
 ## How to use
 
@@ -62,6 +64,9 @@ Requires Java 25.
 ./gradlew runClient    # start Minecraft 26.3 with the mod
 ./gradlew build        # mod jar ends up in build/libs/
 ```
+
+To publish a release: set `version` in `gradle.properties`, update `CHANGELOG.md`, then push a tag
+`v<version>` (e.g. `v1.0.0`). GitHub Actions builds the jar and creates the release page.
 
 In IntelliJ IDEA: *File → Open* the project folder, wait for the Gradle import, then run the
 `Minecraft Client` run configuration.
