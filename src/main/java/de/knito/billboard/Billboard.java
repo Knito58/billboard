@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.knito.billboard.net.ModNetworking;
+import de.knito.billboard.wall.WallProtection;
 
 public class Billboard implements ModInitializer {
 	public static final String MOD_ID = "billboard";
@@ -22,6 +23,7 @@ public class Billboard implements ModInitializer {
 		ModBlockEntities.initialize();
 		ModMenus.initialize();
 		ModNetworking.initialize();
+		WallProtection.initialize();
 
 		LOGGER.info("Billboard loaded");
 	}

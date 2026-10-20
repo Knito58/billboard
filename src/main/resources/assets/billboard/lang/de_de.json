@@ -7,7 +7,6 @@
 	"gui.billboard.go": "Start",
 	"gui.billboard.stop": "Stopp",
 	"gui.billboard.restore": "Zurück",
-	"gui.billboard.state_showing": "Aktiv",
 	"gui.billboard.state_idle": "Bereit",
 	"gui.billboard.slot_wand": "Markierstab mit zwei markierten Ecken",
 	"gui.billboard.slot_pixel": "Pixelblock (daraus werden die Buchstaben)",
@@ -19,7 +18,7 @@
 	"message.billboard.size_done": "Wand: %s breit x %s hoch",
 	"message.billboard.size_not_flat": "Größe: %s x %s x %s, nicht flach (muss 1 Block dick sein)",
 	"message.billboard.not_flat": "Die Wand ist %s x %s x %s Blöcke groß. Sie muss flach sein, 1 Block dick.",
-	"message.billboard.engine_in_plane": "Die Steuerung muss vor der Wand stehen, nicht seitlich in derselben Linie.",
+	"message.billboard.engine_in_plane": "Die Steuerung muss hinter der Wand stehen, nicht seitlich in derselben Linie.",
 	"message.billboard.too_big": "Die Wand ist %s x %s. Maximal %s breit und %s hoch.",
 	"message.billboard.too_far": "Die Steuerung ist zu weit von der Wand entfernt (max. %s Blöcke).",
 	"message.billboard.need_wand": "Leg einen Markierstab mit zwei markierten Ecken in das linke Feld.",
@@ -29,9 +28,12 @@
 	"message.billboard.overlap": "Die Wand überschneidet sich mit einem anderen Billboard.",
 	"message.billboard.not_loaded": "Ein Teil der Wand ist nicht geladen. Geh näher heran.",
 	"message.billboard.block_entity": "Diese Wand geht nicht: %s bei %s %s %s.",
-	"message.billboard.started": "Text auf eine %s x %s Wand geschrieben.",
+	"message.billboard.started": "Billboard läuft auf einer %s x %s Wand.",
 	"message.billboard.not_running": "Es läuft nichts.",
-	"message.billboard.stopped": "Gestoppt. Der Text bleibt, bis du Zurück drückst.",
+	"message.billboard.stopped": "Angehalten. Der Text bleibt stehen bis Start oder Zurück.",
 	"message.billboard.restored": "Wand wiederhergestellt.",
-	"message.billboard.nothing_to_restore": "Nichts wiederherzustellen."
+	"message.billboard.nothing_to_restore": "Nichts wiederherzustellen.",
+	"gui.billboard.state_running": "Läuft",
+	"gui.billboard.state_stopped": "Angehalten",
+	"message.billboard.protected": "Dieser Block gehört zu einem aktiven Billboard. Erst an der Steuerung Zurück drücken."
 }

@@ -4,7 +4,7 @@ Fabric mod for Minecraft: turns any flat wall into a scrolling text billboard ma
 
 ## Status
 
-Step 2 of 4: engine, selector wand and static text. Scrolling and wall protection come in step 3.
+Step 3 of 4: scrolling text and wall protection. Next: dedicated server test and release.
 
 ## How to use
 
@@ -12,13 +12,21 @@ Step 2 of 4: engine, selector wand and static text. Scrolling and wall protectio
    (iron / redstone / iron, redstone / glass pane / redstone, iron / redstone / iron).
 2. Right-click one corner of a flat wall with the wand, then the opposite corner.
    While you hold the wand, the action bar shows the size. Sneak + right-click clears the corners.
-3. Place the engine in front of the wall (on the side the text should be read from), at most 16 blocks away.
+3. Place the engine behind the wall, at most 16 blocks away. The text is read from the other side,
+   so the engine stays hidden and can sit safely inside a building.
 4. Open the engine, put the wand in the left slot and a block (e.g. gold block) in the right slot.
    The block is not used up; it only sets what the letters are made of.
-5. Type a text and press **Go**. **Restore** puts the wall back. Breaking the engine also restores the wall.
+5. Type a text and press **Go**. The text scrolls from right to left; **-** / **+** set the speed
+   (1 = one column per second, 10 = ten). **Stop** freezes it, **Restore** puts the wall back.
+   Breaking the engine also restores the wall.
 
 The font is 5x7. On a taller wall the text is centered vertically; on a lower one the bottom rows are cut off.
-Text longer than the wall is cut at the right edge (until scrolling arrives).
+While a billboard is shown, its wall is protected: players, explosions, pistons, mobs and `/setblock`
+cannot change it, so pixel blocks can't be mined. Blocks attached to the wall (levers, torches, vines) stay put.
+Redstone blocks work as pixels: lamps or dust next to the wall follow the text, like a punch card.
+The other way round works too: redstone lamps as pixels light up where levers or redstone blocks sit behind the wall.
+Blocks in the wall may still change their own state (a lamp lighting up), they just can't be replaced.
+Scrolling pauses while the wall's chunks are not loaded.
 Walls containing chests, signs or other block entities are refused. Maximum wall size is 256 x 64.
 The original blocks are saved in the world (`data/billboard/wall_backups.dat`), so a crash does not lose them.
 

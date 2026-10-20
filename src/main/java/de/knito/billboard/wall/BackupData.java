@@ -12,9 +12,10 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.datafix.DataFixTypes;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
@@ -52,6 +53,10 @@ public class BackupData extends SavedData {
 		}
 
 		void restore(ServerLevel level) {
+			ProtectedAreas.bypass(() -> restoreNow(level));
+		}
+
+		private void restoreNow(ServerLevel level) {
 			int n = 0;
 			for (BlockPos pos : positions(wall)) {
 				int index = n < indices.length ? indices[n] : -1;
@@ -61,9 +66,21 @@ public class BackupData extends SavedData {
 				}
 				BlockState original = palette.get(index);
 				if (level.getBlockState(pos) != original) {
-					level.setBlock(pos, original, Block.UPDATE_CLIENTS);
+					BillboardPainter.set(level, pos.immutable(), original);
 				}
 			}
+		}
+
+		/** The block that was at this wall position before the billboard started. */
+		BlockState original(BlockPos pos) {
+			BlockPos min = wall.min();
+			BlockPos size = wall.max().subtract(min).offset(1, 1, 1);
+			// Same order as BlockPos.betweenClosed: x fastest, then y, then z.
+			int index = (pos.getX() - min.getX()) + size.getX() * ((pos.getY() - min.getY()) + size.getY() * (pos.getZ() - min.getZ()));
+			if (index < 0 || index >= indices.length || indices[index] < 0 || indices[index] >= palette.size()) {
+				return null;
+			}
+			return palette.get(indices[index]);
 		}
 
 		private static int volume(Wall wall) {
@@ -104,6 +121,7 @@ public class BackupData extends SavedData {
 
 	/** Keyed by engine position. */
 	private final Map<BlockPos, Entry> walls;
+	private ResourceKey<Level> dimension;
 
 	public BackupData() {
 		this(Map.of());
@@ -114,7 +132,24 @@ public class BackupData extends SavedData {
 	}
 
 	public static BackupData get(ServerLevel level) {
-		return level.getDataStorage().computeIfAbsent(TYPE);
+		BackupData data = level.getDataStorage().computeIfAbsent(TYPE);
+		if (data.dimension == null) {
+			data.dimension = level.dimension();
+			data.syncProtection();
+		}
+		return data;
+	}
+
+	private void syncProtection() {
+		if (dimension != null) {
+			ProtectedAreas.update(dimension, walls.values().stream().map(e -> e.wall().box()).toList());
+		}
+	}
+
+	/** Original block at a wall position, or null if the engine has no backup or the position is outside it. */
+	public BlockState original(BlockPos engine, BlockPos pos) {
+		Entry entry = walls.get(engine);
+		return entry == null ? null : entry.original(pos);
 	}
 
 	public boolean has(BlockPos engine) {
@@ -140,6 +175,7 @@ public class BackupData extends SavedData {
 	public void backup(ServerLevel level, BlockPos engine, Wall wall) {
 		walls.put(engine.immutable(), Entry.capture(level, wall));
 		setDirty();
+		syncProtection();
 	}
 
 	/** Puts the original blocks back and forgets the backup. Returns false if there was none. */
@@ -151,6 +187,7 @@ public class BackupData extends SavedData {
 		entry.restore(level);
 		walls.remove(engine);
 		setDirty();
+		syncProtection();
 		return true;
 	}
 }

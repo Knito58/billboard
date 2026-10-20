@@ -30,7 +30,8 @@ public record Wall(BlockPos min, BlockPos max, Direction facing) {
 	}
 
 	/**
-	 * Builds the wall spanned by two corners. The engine decides which side the text is read from.
+	 * Builds the wall spanned by two corners. The engine stands behind the wall, hidden;
+	 * the text is read from the other side.
 	 */
 	public static Result of(BlockPos a, BlockPos b, BlockPos engine) {
 		BlockPos min = BlockPos.min(a, b);
@@ -56,10 +57,10 @@ public record Wall(BlockPos min, BlockPos max, Direction facing) {
 		Direction facing;
 		if (alongX) {
 			int d = engine.getZ() - min.getZ();
-			facing = d < 0 ? Direction.NORTH : d > 0 ? Direction.SOUTH : null;
+			facing = d < 0 ? Direction.SOUTH : d > 0 ? Direction.NORTH : null;
 		} else {
 			int d = engine.getX() - min.getX();
-			facing = d < 0 ? Direction.WEST : d > 0 ? Direction.EAST : null;
+			facing = d < 0 ? Direction.EAST : d > 0 ? Direction.WEST : null;
 		}
 		if (facing == null) {
 			return Result.fail(Component.translatable("message.billboard.engine_in_plane"));
