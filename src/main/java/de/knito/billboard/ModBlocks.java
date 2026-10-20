@@ -15,12 +15,13 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 
 import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 
+import de.knito.billboard.block.BillboardEngineBlock;
+
 public class ModBlocks {
-	// Placeholder for now; becomes the billboard engine with its screen in step 2.
 	public static final Block BILLBOARD_ENGINE = register(
 			"billboard_engine",
-			Block::new,
-			BlockBehaviour.Properties.of().strength(2.0f).sound(SoundType.METAL)
+			BillboardEngineBlock::new,
+			BlockBehaviour.Properties.of().strength(2.0f).requiresCorrectToolForDrops().sound(SoundType.METAL)
 	);
 
 	private static Block register(String name, Function<BlockBehaviour.Properties, Block> blockFactory, BlockBehaviour.Properties properties) {

@@ -7,6 +7,8 @@ import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.knito.billboard.net.ModNetworking;
+
 public class Billboard implements ModInitializer {
 	public static final String MOD_ID = "billboard";
 
@@ -14,7 +16,12 @@ public class Billboard implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
+		ModComponents.initialize();
 		ModBlocks.initialize();
+		ModItems.initialize();
+		ModBlockEntities.initialize();
+		ModMenus.initialize();
+		ModNetworking.initialize();
 
 		LOGGER.info("Billboard loaded");
 	}

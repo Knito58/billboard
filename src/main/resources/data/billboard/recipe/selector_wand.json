@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "T": "minecraft:redstone_torch",
+    "S": "minecraft:stick"
+  },
+  "pattern": [
+    "T",
+    "S"
+  ],
+  "result": {
+    "id": "billboard:selector_wand"
+  }
+}
