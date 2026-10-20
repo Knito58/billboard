@@ -1,1 +1,1 @@
-{"parent":"minecraft:block/cube_all","textures":{"all":"billboard:block/billboard_engine"}}
+{"parent":"minecraft:block/cube_bottom_top","textures":{"side":"billboard:block/billboard_engine_side","top":"billboard:block/billboard_engine_top","bottom":"billboard:block/billboard_engine_top"}}
