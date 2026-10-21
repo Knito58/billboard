@@ -1,3 +1,11 @@
+## Billboard Engine 1.0.1 for Minecraft 26.3 (Fabric)
+
+**Install:** put `billboard-1.0.1.jar` into the `mods` folder, together with
+[Fabric API](https://modrinth.com/mod/fabric-api). Needs Fabric Loader 0.19.5 or newer and Java 25.
+
+- The mod is now called Billboard Engine (formerly Billboard). Mod id, items, recipes and saved walls are unchanged; worlds from 1.0.0 load as before.
+- New mod icon, shown in mod lists.
+
 ## Billboard 1.0.0 for Minecraft 26.3 (Fabric)
 
 First release. Turns any flat wall into a scrolling text billboard made of blocks.

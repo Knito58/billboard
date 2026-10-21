@@ -1,4 +1,4 @@
-# Billboard
+# Billboard Engine
 
 Fabric mod for Minecraft: turns any flat wall into a scrolling text billboard made of blocks.
 
@@ -44,7 +44,7 @@ Wax the sign with a honeycomb so nobody can edit it by accident; the engine stil
 ## Control by ComputerCraft
 
 With [CC: Tweaked](https://modrinth.com/mod/cc-tweaked) installed, the engine is a peripheral of type `billboard_engine`
-(computer next to it, or connected by a wired modem). It is optional; Billboard runs fine without CC.
+(computer next to it, or connected by a wired modem). It is optional; Billboard Engine runs fine without CC.
 
 ```lua
 local b = peripheral.find("billboard_engine")
@@ -58,7 +58,7 @@ b.getText(), b.getSpeed(), b.isRunning(), b.isShowing()
 
 ## How this mod is made
 
-Billboard is written by Claude AI (Anthropic), code, textures and icon included.
+Billboard Engine is written by Claude AI (Anthropic), code, textures and icon included.
 Knito58 decides what the mod does and tests every version in game.
 
 ## Build and run (Linux)

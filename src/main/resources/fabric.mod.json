@@ -2,7 +2,7 @@
 	"schemaVersion": 1,
 	"id": "billboard",
 	"version": "${version}",
-	"name": "Billboard",
+	"name": "Billboard Engine",
 	"description": "Turns any flat wall into a scrolling text billboard made of blocks.",
 	"authors": [
 		"Knito58"
