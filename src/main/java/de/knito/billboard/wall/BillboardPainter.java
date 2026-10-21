@@ -42,13 +42,14 @@ public final class BillboardPainter {
 
 	/**
 	 * Whether a wall pixel is lit at the given scroll offset. The text moves right to left as the offset grows.
-	 * A wall taller than 7 rows gets the text vertically centered; a lower one loses the bottom rows.
+	 * A wall taller than the text gets it vertically centered; a lower one loses the bottom rows.
 	 */
 	static boolean lit(Wall wall, boolean[][] bitmap, int offset, int column, int row) {
+		int textHeight = bitmap.length == 0 ? 0 : bitmap[0].length;
 		int height = wall.height();
-		int top = height > BillboardFont.HEIGHT ? (height - BillboardFont.HEIGHT) / 2 : 0;
+		int top = height > textHeight ? (height - textHeight) / 2 : 0;
 		int textRow = row - top;
-		if (textRow < 0 || textRow >= BillboardFont.HEIGHT) {
+		if (textRow < 0 || textRow >= textHeight) {
 			return false;
 		}
 		int textColumn = column + offset - wall.width();
@@ -68,14 +69,20 @@ public final class BillboardPainter {
 		});
 	}
 
-	/** Changes only the pixels that differ between two frames. */
+	/** Changes only the pixels that differ between two frames of the same text. */
 	public static void step(ServerLevel level, BlockPos engine, BackupData backups, Wall wall, boolean[][] bitmap,
 			int oldOffset, int newOffset, BlockState pixel) {
+		step(level, engine, backups, wall, bitmap, oldOffset, bitmap, newOffset, pixel);
+	}
+
+	/** Changes only the pixels that differ between two frames; the bitmaps may differ, e.g. after a size change. */
+	public static void step(ServerLevel level, BlockPos engine, BackupData backups, Wall wall, boolean[][] oldBitmap,
+			int oldOffset, boolean[][] newBitmap, int newOffset, BlockState pixel) {
 		ProtectedAreas.bypass(() -> {
 			for (int column = 0; column < wall.width(); column++) {
 				for (int row = 0; row < wall.height(); row++) {
-					boolean now = lit(wall, bitmap, newOffset, column, row);
-					if (now == lit(wall, bitmap, oldOffset, column, row)) {
+					boolean now = lit(wall, newBitmap, newOffset, column, row);
+					if (now == lit(wall, oldBitmap, oldOffset, column, row)) {
 						continue;
 					}
 					BlockPos pos = wall.pixel(column, row);

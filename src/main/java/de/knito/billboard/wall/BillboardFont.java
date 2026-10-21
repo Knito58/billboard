@@ -11,6 +11,9 @@ public final class BillboardFont {
 	public static final int HEIGHT = 7;
 	/** Glyph width plus one blank column between characters. */
 	public static final int ADVANCE = GLYPH_WIDTH + 1;
+	public static final int MIN_SIZE = 1;
+	/** Size 9 makes letters 63 blocks high, the tallest that fits a wall of {@link Wall#MAX_HEIGHT}. */
+	public static final int MAX_SIZE = 9;
 
 	private static final Map<Character, int[]> GLYPHS = new HashMap<>();
 
@@ -132,19 +135,23 @@ public final class BillboardFont {
 		return GLYPHS.containsKey(c);
 	}
 
-	/** Width in pixel columns of the text, without trailing spacing. */
+	/** Width in pixel columns of the text at size 1, without trailing spacing. */
 	public static int width(String text) {
 		return text.isEmpty() ? 0 : text.length() * ADVANCE - 1;
 	}
 
-	/** Renders the text into a bitmap of [column][row], {@link #HEIGHT} rows high. Unknown characters become '?'. */
-	public static boolean[][] render(String text) {
-		boolean[][] bitmap = new boolean[width(text)][HEIGHT];
+	/**
+	 * Renders the text into a bitmap of [column][row]. Size 1 is the plain 5x7 font; size n turns every
+	 * font dot into n x n blocks, so the text is {@code 7 * n} rows high. Unknown characters become '?'.
+	 */
+	public static boolean[][] render(String text, int size) {
+		int scale = Math.clamp(size, MIN_SIZE, MAX_SIZE);
+		boolean[][] bitmap = new boolean[width(text) * scale][HEIGHT * scale];
 		for (int i = 0; i < text.length(); i++) {
 			int[] columns = GLYPHS.getOrDefault(text.charAt(i), GLYPHS.get('?'));
-			for (int c = 0; c < GLYPH_WIDTH; c++) {
-				for (int r = 0; r < HEIGHT; r++) {
-					bitmap[i * ADVANCE + c][r] = (columns[c] >> r & 1) != 0;
+			for (int x = 0; x < GLYPH_WIDTH * scale; x++) {
+				for (int y = 0; y < HEIGHT * scale; y++) {
+					bitmap[i * ADVANCE * scale + x][y] = (columns[x / scale] >> (y / scale) & 1) != 0;
 				}
 			}
 		}
