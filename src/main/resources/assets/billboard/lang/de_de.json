@@ -4,6 +4,8 @@
 	"gui.billboard.text": "Text",
 	"gui.billboard.text_hint": "Text eingeben...",
 	"gui.billboard.speed": "Tempo %s",
+	"gui.billboard.size": "Größe %s",
+	"gui.billboard.size_tooltip": "Schriftgröße: 1 = 5x7 Blöcke, 2 = 10x14, bis 9 = 45x63",
 	"gui.billboard.go": "Start",
 	"gui.billboard.stop": "Stopp",
 	"gui.billboard.restore": "Zurück",
