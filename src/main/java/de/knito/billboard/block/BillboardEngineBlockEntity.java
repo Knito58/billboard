@@ -68,6 +68,8 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 	/** Letter size: 1 = 5x7 blocks per letter, n = every font dot drawn as n x n blocks. */
 	private int size = BillboardFont.MIN_SIZE;
 	private boolean running;
+	/** Run-off mode: the text scrolls until it has left the wall once, then the wall is restored. */
+	private boolean once;
 	/** What the wall shows, which may differ from the text box until Go is pressed again. */
 	private String shownText = "";
 	/** Letter size the wall shows. */
@@ -175,8 +177,29 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 		setChanged();
 	}
 
-	/** Checks everything, backs up the wall and draws the text. Returns the message for the player. */
+	/** Checks everything, backs up the wall and draws the text at the wall's left edge. Returns the message for the player. */
 	public Component go() {
+		return start(false);
+	}
+
+	/**
+	 * Lets the text run off the wall once, then gives the wall back. A shown text (running or stopped)
+	 * continues from where it is; on an idle wall the text first comes in from the right.
+	 */
+	public Component runOff() {
+		if (!isShowing()) {
+			Component message = start(true);
+			if (!running) {
+				return message;
+			}
+		}
+		running = true;
+		once = true;
+		setChanged();
+		return Component.translatable("message.billboard.running_off");
+	}
+
+	private Component start(boolean fromRight) {
 		if (!(level instanceof ServerLevel serverLevel)) {
 			return Component.empty();
 		}
@@ -222,8 +245,9 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 		shownSize = size;
 		bitmap = BillboardFont.render(shownText, shownSize);
 		pixel = ((BlockItem) pixelStack.getItem()).getBlock().defaultBlockState();
-		offset = BillboardPainter.startOffset(wall);
+		offset = fromRight ? 0 : BillboardPainter.startOffset(wall);
 		ticks = 0;
+		once = false;
 		BillboardPainter.paint(serverLevel, wall, bitmap, offset, pixel);
 		running = true;
 		setChanged();
@@ -331,7 +355,13 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 		if (bitmap == null) {
 			bitmap = BillboardFont.render(shownText, shownSize);
 		}
-		int next = (offset + 1) % BillboardPainter.period(wall, bitmap);
+		int period = BillboardPainter.period(wall, bitmap);
+		if (once && offset + 1 >= period) {
+			// The last column is leaving the wall: nothing would be shown any more, so hand the wall back.
+			restore();
+			return;
+		}
+		int next = (offset + 1) % period;
 		BillboardPainter.step(serverLevel, worldPosition, backups, wall, bitmap, offset, next, pixel);
 		offset = next;
 		setChanged();
@@ -375,6 +405,10 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 		return running;
 	}
 
+	public boolean isRunningOff() {
+		return running && once;
+	}
+
 	public boolean isShowingText() {
 		return isShowing();
 	}
@@ -384,12 +418,14 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 			return Component.translatable("message.billboard.not_running");
 		}
 		running = false;
+		once = false;
 		setChanged();
 		return Component.translatable("message.billboard.stopped");
 	}
 
 	public Component restore() {
 		running = false;
+		once = false;
 		setChanged();
 		if (level instanceof ServerLevel serverLevel && BackupData.get(serverLevel).restore(serverLevel, worldPosition)) {
 			return Component.translatable("message.billboard.restored");
@@ -416,6 +452,7 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 		size = Math.clamp(input.getIntOr("size", BillboardFont.MIN_SIZE), BillboardFont.MIN_SIZE, BillboardFont.MAX_SIZE);
 		shownSize = Math.clamp(input.getIntOr("shown_size", BillboardFont.MIN_SIZE), BillboardFont.MIN_SIZE, BillboardFont.MAX_SIZE);
 		running = input.getBooleanOr("running", false);
+		once = input.getBooleanOr("once", false);
 		shownText = cleanText(input.getStringOr("shown_text", ""));
 		pixel = input.read("pixel", BlockState.CODEC).orElse(null);
 		offset = Math.max(0, input.getIntOr("offset", 0));
@@ -433,6 +470,7 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 		output.putInt("size", size);
 		output.putInt("shown_size", shownSize);
 		output.putBoolean("running", running);
+		output.putBoolean("once", once);
 		output.putString("shown_text", shownText);
 		if (pixel != null) {
 			output.store("pixel", BlockState.CODEC, pixel);

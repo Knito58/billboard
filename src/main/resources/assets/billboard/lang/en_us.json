@@ -35,6 +35,8 @@
 	"message.billboard.stopped": "Stopped. The text stays where it is until Go or Restore.",
 	"message.billboard.restored": "Wall restored.",
 	"message.billboard.nothing_to_restore": "Nothing to restore.",
+	"message.billboard.running_off": "Running the text off the wall once.",
+	"message.billboard.no_engine": "No billboard engine at %s %s %s.",
 	"gui.billboard.state_running": "Running",
 	"gui.billboard.state_stopped": "Stopped",
 	"message.billboard.protected": "This block belongs to an active billboard. Press Restore on its engine first.",

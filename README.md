@@ -57,8 +57,18 @@ b.setSize(3)           -- letter size 1 to 9, takes effect at once (also on a st
 print(b.go())          -- true, or false plus a reason such as "need_wand", "need_pixel", "overlap"
 b.stop()               -- freeze the text
 b.restore()            -- put the wall back
-b.getText(), b.getSpeed(), b.getSize(), b.isRunning(), b.isShowing()
+b.runOff()             -- let the text run off the wall once, then put the wall back
+b.getText(), b.getSpeed(), b.getSize(), b.isRunning(), b.isShowing(), b.isRunningOff()
 ```
+
+`runOff()` lets a shown text (running or stopped) scroll on until it has left the wall, then restores the wall.
+If nothing is shown, the text first comes in from the right, crosses the wall once and is gone.
+Wait for it with `while b.isRunningOff() do sleep(0.5) end`.
+
+## Command
+
+`/billboard runoff <x y z>` does the same as `runOff()` for the engine at that position.
+It needs operator rights (level 2), so it also works in a command block.
 
 ## How this mod is made
 
