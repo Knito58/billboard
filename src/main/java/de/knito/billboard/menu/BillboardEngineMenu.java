@@ -32,7 +32,7 @@ public class BillboardEngineMenu extends AbstractContainerMenu {
 	public static final int WAND_X = 8;
 	public static final int PIXEL_X = 30;
 	public static final int SLOTS_Y = 42;
-	public static final int INVENTORY_Y = 108;
+	public static final int INVENTORY_Y = 130;
 
 	private final Container container;
 	private final Container pixelSample;
@@ -43,7 +43,7 @@ public class BillboardEngineMenu extends AbstractContainerMenu {
 
 	/** Client side. */
 	public BillboardEngineMenu(int containerId, Inventory inventory, OpenData openData) {
-		this(containerId, inventory, new SimpleContainer(1), new SimpleContainer(1), new SimpleContainerData(3), null, openData.text());
+		this(containerId, inventory, new SimpleContainer(1), new SimpleContainer(1), new SimpleContainerData(4), null, openData.text());
 	}
 
 	/** Server side. */
@@ -55,7 +55,7 @@ public class BillboardEngineMenu extends AbstractContainerMenu {
 		super(ModMenus.BILLBOARD_ENGINE, containerId);
 		checkContainerSize(container, 1);
 		checkContainerSize(pixelSample, 1);
-		checkContainerDataCount(data, 3);
+		checkContainerDataCount(data, 4);
 		this.container = container;
 		this.pixelSample = pixelSample;
 		this.data = data;
@@ -99,6 +99,10 @@ public class BillboardEngineMenu extends AbstractContainerMenu {
 
 	public int speed() {
 		return data.get(0);
+	}
+
+	public int size() {
+		return data.get(3);
 	}
 
 	public boolean isShowing() {

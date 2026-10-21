@@ -21,10 +21,13 @@ On a server, install it on the server and on every client. [CC: Tweaked](https:/
    [REI](https://modrinth.com/mod/rei). The slot only keeps a faded copy as a setting: the block stays
    in your inventory and is never used up. Click with an empty hand to clear it.
 5. Type a text and press **Go**. The text scrolls from right to left; **-** / **+** set the speed
-   (1 = one column per second, 10 = ten). **Stop** freezes it, **Restore** puts the wall back.
+   (1 = one column per second, 10 = ten). **Size** - / + sets the letter size from 1 to 9.
+   **Stop** freezes it, **Restore** puts the wall back.
    Breaking the engine also restores the wall.
 
-The font is 5x7. On a taller wall the text is centered vertically; on a lower one the bottom rows are cut off.
+The font is 5x7. Size 1 makes each letter 5 x 7 blocks; size n draws every dot as n x n blocks
+(size 2 = 10 x 14, size 9 = 45 x 63, the tallest that fits a 64 high wall). Changing the size redraws a shown text at once.
+On a taller wall the text is centered vertically; on a lower one the bottom rows are cut off.
 While a billboard is shown, its wall is protected: players, explosions, pistons, mobs and `/setblock`
 cannot change it, so pixel blocks can't be mined. Blocks attached to the wall (levers, torches, vines) stay put.
 Redstone blocks work as pixels: lamps or dust next to the wall follow the text, like a punch card.
@@ -40,7 +43,7 @@ No other mod needed. Put a sign on the engine (any side, or on top) and give the
 (button, lever, observer...). The engine reads the sign, joins its lines with spaces and presses **Go**.
 While it runs, it checks the sign every second: when the text changes, the billboard restarts with the new text.
 That also works with Create's Display Link, which can write into vanilla signs.
-A pulse while the same text is already running changes nothing. Speed, Stop and Restore stay in the GUI.
+A pulse while the same text is already running changes nothing. Speed, size, Stop and Restore stay in the GUI.
 Wax the sign with a honeycomb so nobody can edit it by accident; the engine still reads it.
 
 ## Control by ComputerCraft
@@ -52,12 +55,23 @@ With [CC: Tweaked](https://modrinth.com/mod/cc-tweaked) installed, the engine is
 local b = peripheral.find("billboard_engine")
 b.setText("Hello " .. textutils.formatTime(os.time()))  -- up to 64 characters, used by the next go()
 b.setSpeed(7)          -- 1 to 10, takes effect at once
+b.setSize(3)           -- letter size 1 to 9, takes effect at once (also on a stopped text)
 b.setPixel("minecraft:gold_block")  -- any full block, no item needed; getPixel() reads it
 print(b.go())          -- true, or false plus a reason such as "need_wand", "need_pixel", "overlap"
 b.stop()               -- freeze the text
 b.restore()            -- put the wall back
-b.getText(), b.getSpeed(), b.isRunning(), b.isShowing()
+b.runOff()             -- let the text run off the wall once, then put the wall back
+b.getText(), b.getSpeed(), b.getSize(), b.isRunning(), b.isShowing(), b.isRunningOff()
 ```
+
+`runOff()` lets a shown text (running or stopped) scroll on until it has left the wall, then restores the wall.
+If nothing is shown, the text first comes in from the right, crosses the wall once and is gone.
+Wait for it with `while b.isRunningOff() do sleep(0.5) end`.
+
+## Command
+
+`/billboard runoff <x y z>` does the same as `runOff()` for the engine at that position.
+It needs operator rights (level 2), so it also works in a command block.
 
 ## How this mod is made
 

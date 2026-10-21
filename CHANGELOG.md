@@ -1,5 +1,8 @@
-## Unreleased
+## Next version (not released yet)
 
+- Letter size 1 to 9: every dot of the 5x7 font becomes n x n blocks, up to 45 x 63 blocks per letter.
+  Set it with **Size - / +** in the engine (new row under Speed) or `setSize(n)` / `getSize()` from ComputerCraft.
+  A size change redraws a running or stopped text at once.
 - The pixel slot is now a sample slot: clicking it with a block copies the block, you keep it.
   Blocks can also be dragged there from JEI or REI. Breaking the engine drops only the wand.
 - ComputerCraft: `setPixel("minecraft:gold_block")` and `getPixel()` choose the pixel block from Lua.

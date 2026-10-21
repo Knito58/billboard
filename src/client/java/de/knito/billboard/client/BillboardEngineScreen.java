@@ -24,20 +24,23 @@ import de.knito.billboard.block.BillboardEngineBlockEntity;
 import de.knito.billboard.menu.BillboardEngineMenu;
 import de.knito.billboard.net.EngineActionPayload;
 import de.knito.billboard.net.PixelSamplePayload;
+import de.knito.billboard.wall.BillboardFont;
 
 public class BillboardEngineScreen extends AbstractContainerScreen<BillboardEngineMenu> {
 	private static final Identifier BACKGROUND = Billboard.id("textures/gui/billboard_engine.png");
 	private static final int LABEL_COLOR = 0xFF404040;
-	private static final int STATUS_Y = 86;
+	private static final int STATUS_Y = 108;
 
 	private EditBox textBox;
 	private int speed;
+	private int size;
 	private Component status = Component.empty();
 
 	public BillboardEngineScreen(BillboardEngineMenu menu, Inventory inventory, Component title) {
-		super(menu, inventory, title, 176, 190);
+		super(menu, inventory, title, 176, 212);
 		this.inventoryLabelY = BillboardEngineMenu.INVENTORY_Y - 11;
 		this.speed = -1;
+		this.size = -1;
 	}
 
 	@Override
@@ -55,13 +58,17 @@ public class BillboardEngineScreen extends AbstractContainerScreen<BillboardEngi
 				.bounds(leftPos + 56, topPos + 41, 16, 18).build());
 		addRenderableWidget(Button.builder(Component.literal("+"), b -> changeSpeed(1))
 				.bounds(leftPos + 152, topPos + 41, 16, 18).build());
+		addRenderableWidget(Button.builder(Component.literal("-"), b -> changeSize(-1))
+				.bounds(leftPos + 56, topPos + 63, 16, 18).build());
+		addRenderableWidget(Button.builder(Component.literal("+"), b -> changeSize(1))
+				.bounds(leftPos + 152, topPos + 63, 16, 18).build());
 
 		addRenderableWidget(Button.builder(Component.translatable("gui.billboard.go"), b -> send(EngineActionPayload.Action.GO))
-				.bounds(leftPos + 8, topPos + 64, 50, 18).build());
+				.bounds(leftPos + 8, topPos + 86, 50, 18).build());
 		addRenderableWidget(Button.builder(Component.translatable("gui.billboard.stop"), b -> send(EngineActionPayload.Action.STOP))
-				.bounds(leftPos + 63, topPos + 64, 50, 18).build());
+				.bounds(leftPos + 63, topPos + 86, 50, 18).build());
 		addRenderableWidget(Button.builder(Component.translatable("gui.billboard.restore"), b -> send(EngineActionPayload.Action.RESTORE))
-				.bounds(leftPos + 118, topPos + 64, 50, 18).build());
+				.bounds(leftPos + 118, topPos + 86, 50, 18).build());
 	}
 
 	@Override
@@ -79,8 +86,17 @@ public class BillboardEngineScreen extends AbstractContainerScreen<BillboardEngi
 		send(EngineActionPayload.Action.SAVE);
 	}
 
+	private int currentSize() {
+		return size < 0 ? Math.clamp(menu.size(), BillboardFont.MIN_SIZE, BillboardFont.MAX_SIZE) : size;
+	}
+
+	private void changeSize(int delta) {
+		size = Math.clamp(currentSize() + delta, BillboardFont.MIN_SIZE, BillboardFont.MAX_SIZE);
+		send(EngineActionPayload.Action.SAVE);
+	}
+
 	private void send(EngineActionPayload.Action action) {
-		ClientPlayNetworking.send(new EngineActionPayload(action, textBox.getValue(), currentSpeed()));
+		ClientPlayNetworking.send(new EngineActionPayload(action, textBox.getValue(), currentSpeed(), currentSize()));
 	}
 
 	/** Screen area of the pixel slot, for blocks dragged from JEI or REI. */
@@ -129,6 +145,7 @@ public class BillboardEngineScreen extends AbstractContainerScreen<BillboardEngi
 	protected void extractLabels(GuiGraphicsExtractor graphics, int xm, int ym) {
 		super.extractLabels(graphics, xm, ym);
 		graphics.centeredText(font, Component.translatable("gui.billboard.speed", currentSpeed()), 112, 46, 0xFFFFFFFF);
+		graphics.centeredText(font, Component.translatable("gui.billboard.size", currentSize()), 112, 68, 0xFFFFFFFF);
 
 		Component state;
 		int stateColor;
@@ -180,6 +197,9 @@ public class BillboardEngineScreen extends AbstractContainerScreen<BillboardEngi
 			} else if (hoveredSlot.index == BillboardEngineBlockEntity.SLOT_PIXEL) {
 				graphics.setTooltipForNextFrame(Component.translatable("gui.billboard.slot_pixel"), mouseX, mouseY);
 			}
+		}
+		if (mouseX >= leftPos + 73 && mouseX < leftPos + 152 && mouseY >= topPos + 63 && mouseY < topPos + 81) {
+			graphics.setTooltipForNextFrame(Component.translatable("gui.billboard.size_tooltip"), mouseX, mouseY);
 		}
 		if (!status.getString().isEmpty() && mouseY >= topPos + STATUS_Y && mouseY < topPos + STATUS_Y + 9
 				&& font.width(status) > imageWidth - 16) {

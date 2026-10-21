@@ -24,7 +24,7 @@ public class ModNetworking {
 				return;
 			}
 			BillboardEngineBlockEntity engine = menu.engine();
-			engine.applySettings(payload.text(), payload.speed());
+			engine.applySettings(payload.text(), payload.speed(), payload.size());
 			Component message = switch (payload.action()) {
 				case SAVE -> null;
 				case GO -> engine.go();
