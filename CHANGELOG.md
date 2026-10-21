@@ -6,6 +6,7 @@
 - The pixel slot is now a sample slot: clicking it with a block copies the block, you keep it.
   Blocks can also be dragged there from JEI or REI. Breaking the engine drops only the wand.
 - ComputerCraft: `setPixel("minecraft:gold_block")` and `getPixel()` choose the pixel block from Lua.
+- New character `·` (middle dot): a single dot in the middle row. From Lua write it as `"\183"`.
 - Engines from older versions hand their real pixel blocks back (they pop out on top of the engine).
 
 ## Billboard Engine 1.0.1 for Minecraft 26.3 (Fabric)
