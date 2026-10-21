@@ -127,6 +127,21 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 		return stack.is(ModItems.SELECTOR_WAND);
 	}
 
+	/**
+	 * False if the wand marks a wall this engine does not touch, or one in another dimension.
+	 * A wand with fewer than two corners fits; the start then asks for the corners.
+	 */
+	public static boolean wandFits(ItemStack wand, Level level, BlockPos engine) {
+		WandCorners corners = wand.getOrDefault(ModComponents.WAND_CORNERS, WandCorners.EMPTY);
+		if (!corners.isComplete()) {
+			return true;
+		}
+		GlobalPos a = corners.first().orElseThrow();
+		GlobalPos b = corners.second().orElseThrow();
+		return a.dimension().equals(level.dimension()) && b.dimension().equals(level.dimension())
+				&& Wall.isNextTo(a.pos(), b.pos(), engine);
+	}
+
 	/** Pixel blocks must be plain full blocks: no block entity, nothing that falls. */
 	public static boolean isValidPixel(ItemStack stack) {
 		if (!(stack.getItem() instanceof BlockItem blockItem)) {
@@ -291,6 +306,40 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 				engine.scroll(serverLevel);
 			}
 		}
+	}
+
+	/**
+	 * Redstone power from any side except the one touching the wall. A redstone block pixel next to
+	 * the engine would otherwise start it again and again.
+	 */
+	public boolean hasSignal() {
+		if (level == null) {
+			return false;
+		}
+		Direction wallSide = wallSide();
+		for (Direction direction : Direction.values()) {
+			if (direction != wallSide && level.hasSignal(worldPosition.relative(direction), direction)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/** Direction from the engine to the wall it touches: the shown wall, else the one the wand marks. Null if none. */
+	private Direction wallSide() {
+		if (!(level instanceof ServerLevel serverLevel)) {
+			return null;
+		}
+		Wall shown = BackupData.get(serverLevel).wallOf(worldPosition);
+		if (shown != null) {
+			return shown.isTouchedBy(worldPosition) ? shown.facing() : null;
+		}
+		WandCorners corners = items.getItem(0).getOrDefault(ModComponents.WAND_CORNERS, WandCorners.EMPTY);
+		if (!corners.isComplete() || !wandFits(items.getItem(0), level, worldPosition)) {
+			return null;
+		}
+		Wall.Result result = Wall.of(corners.first().orElseThrow().pos(), corners.second().orElseThrow().pos(), worldPosition);
+		return result.isOk() ? result.wall().facing() : null;
 	}
 
 	/** Called by the block on neighbour updates. A rising redstone edge reads the sign and starts the billboard. */

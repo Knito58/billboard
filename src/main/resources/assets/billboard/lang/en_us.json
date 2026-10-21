@@ -24,7 +24,7 @@
 	"message.billboard.not_flat": "The wall is %s x %s x %s blocks. It must be flat, 1 block thick.",
 	"message.billboard.engine_in_plane": "The engine must stand behind the wall, not beside it in the same line.",
 	"message.billboard.too_big": "The wall is %s x %s. Maximum is %s wide and %s high.",
-	"message.billboard.too_far": "The engine is too far from the wall (max %s blocks).",
+	"message.billboard.not_attached": "The engine must touch the back of the wall with a full face. This wand is marked for a different wall.",
 	"message.billboard.need_wand": "Put a selector wand with two marked corners in the left slot.",
 	"message.billboard.need_pixel": "Pick a pixel block: click the right slot with a full block.",
 	"message.billboard.need_text": "Type some text first.",

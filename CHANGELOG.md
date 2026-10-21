@@ -6,6 +6,10 @@
 - The pixel slot is now a sample slot: clicking it with a block copies the block, you keep it.
   Blocks can also be dragged there from JEI or REI. Breaking the engine drops only the wand.
 - ComputerCraft: `setPixel("minecraft:gold_block")` and `getPixel()` choose the pixel block from Lua.
+- The engine must now touch its wall: place it directly behind one wall block, full face contact.
+  It no longer works from up to 16 blocks away, and it refuses a wand marked for a different wall.
+  An engine that already shows text keeps running; the rule applies at its next start.
+- The engine ignores redstone power from the side that touches the wall, so a redstone block pixel can't start it.
 - Engines from older versions hand their real pixel blocks back (they pop out on top of the engine).
 
 ## Billboard Engine 1.0.1 for Minecraft 26.3 (Fabric)
