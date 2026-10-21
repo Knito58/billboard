@@ -1,7 +1,5 @@
 package de.knito.billboard.compat;
 
-import java.util.Optional;
-
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
@@ -78,9 +76,9 @@ public final class ComputerCraftCompat {
 
 		/** The pixel block's id, such as "minecraft:gold_block", or nil if none is set. */
 		@LuaFunction(mainThread = true)
-		public final Optional<String> getPixel() {
+		public final MethodResult getPixel() {
 			ItemStack sample = engine.pixelSample();
-			return sample.isEmpty() ? Optional.empty() : Optional.of(BuiltInRegistries.ITEM.getKey(sample.getItem()).toString());
+			return sample.isEmpty() ? MethodResult.of() : MethodResult.of(BuiltInRegistries.ITEM.getKey(sample.getItem()).toString());
 		}
 
 		/** Sets the pixel block for the next go(), like the sample slot. Only the id is stored; no item is needed. */
