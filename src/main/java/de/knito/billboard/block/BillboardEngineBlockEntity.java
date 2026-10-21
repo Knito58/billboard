@@ -5,6 +5,7 @@ import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -44,13 +45,25 @@ import de.knito.billboard.wall.BillboardPainter;
 import de.knito.billboard.wall.Wall;
 
 public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedMenuProvider<BillboardEngineMenu.OpenData> {
+	/** Menu slot numbers. */
 	public static final int SLOT_WAND = 0;
 	public static final int SLOT_PIXEL = 1;
 	public static final int MAX_TEXT_LENGTH = 64;
 	public static final int MIN_SPEED = 1;
 	public static final int MAX_SPEED = 10;
 
-	private final SimpleContainer items = new SimpleContainer(2) {
+	/** Holds the wand, a real item. */
+	private final SimpleContainer items = new EngineContainer();
+	/** Holds a one-item sample of the pixel block. It is only a setting: never taken from or given to a player. */
+	private final SimpleContainer pixelSample = new EngineContainer();
+	/** A real pixel stack from a world saved before the sample slot existed; handed back on the next tick. */
+	private ItemStack legacyPixel = ItemStack.EMPTY;
+
+	private class EngineContainer extends SimpleContainer {
+		EngineContainer() {
+			super(1);
+		}
+
 		@Override
 		public void setChanged() {
 			super.setChanged();
@@ -61,7 +74,7 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 		public boolean stillValid(Player player) {
 			return Container.stillValidBlockEntity(BillboardEngineBlockEntity.this, player);
 		}
-	};
+	}
 
 	private String text = "";
 	private int speed = 5;
@@ -123,6 +136,11 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 		return !(block instanceof EntityBlock)
 				&& !(block instanceof Fallable)
 				&& block.defaultBlockState().isCollisionShapeFullBlock(EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
+	}
+
+	/** A one-item copy of a valid pixel block, or empty for anything else. */
+	public static ItemStack sampleOf(ItemStack stack) {
+		return isValidPixel(stack) ? stack.copyWithCount(1) : ItemStack.EMPTY;
 	}
 
 	public static String cleanText(String text) {
@@ -204,12 +222,12 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 			return Component.empty();
 		}
 
-		ItemStack wand = items.getItem(SLOT_WAND);
+		ItemStack wand = items.getItem(0);
 		WandCorners corners = wand.getOrDefault(ModComponents.WAND_CORNERS, WandCorners.EMPTY);
 		if (!isValidWand(wand) || !corners.isComplete()) {
 			return Component.translatable("message.billboard.need_wand");
 		}
-		ItemStack pixelStack = items.getItem(SLOT_PIXEL);
+		ItemStack pixelStack = pixelSample.getItem(0);
 		if (!isValidPixel(pixelStack)) {
 			return Component.translatable("message.billboard.need_pixel");
 		}
@@ -260,6 +278,11 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 	}
 
 	public static void serverTick(Level level, BlockPos pos, BlockState state, BillboardEngineBlockEntity engine) {
+		if (!engine.legacyPixel.isEmpty()) {
+			Containers.dropItemStack(level, pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5, engine.legacyPixel);
+			engine.legacyPixel = ItemStack.EMPTY;
+			engine.setChanged();
+		}
 		if (engine.running && level instanceof ServerLevel serverLevel) {
 			if (level.getGameTime() % 20 == 0) {
 				engine.followSign();
@@ -409,6 +432,16 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 		return running && once;
 	}
 
+	public ItemStack pixelSample() {
+		return pixelSample.getItem(0);
+	}
+
+	/** Sets the pixel block for the next go(). Anything that is not a valid pixel block clears it. */
+	public void setPixelSample(ItemStack stack) {
+		pixelSample.setItem(0, sampleOf(stack));
+		pixelSample.setChanged();
+	}
+
 	public boolean isShowingText() {
 		return isShowing();
 	}
@@ -435,18 +468,24 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 
 	@Override
 	public void preRemoveSideEffects(BlockPos pos, BlockState state) {
-		// The engine is going away: give the wall back and drop the wand and pixel block.
+		// The engine is going away: give the wall back and drop the wand. The pixel sample is only a setting and drops nothing.
 		if (level instanceof ServerLevel serverLevel) {
 			BackupData.get(serverLevel).restore(serverLevel, pos);
 			Containers.dropContents(serverLevel, pos, items);
+			Containers.dropItemStack(serverLevel, pos.getX(), pos.getY(), pos.getZ(), legacyPixel);
+			legacyPixel = ItemStack.EMPTY;
 		}
 	}
 
 	@Override
 	protected void loadAdditional(ValueInput input) {
 		super.loadAdditional(input);
-		items.clearContent();
-		ContainerHelper.loadAllItems(input, items.getItems());
+		// Up to 1.0.1, slot 1 held a real pixel stack: it becomes the sample, and the items go back to the player.
+		NonNullList<ItemStack> saved = NonNullList.withSize(2, ItemStack.EMPTY);
+		ContainerHelper.loadAllItems(input, saved);
+		items.setItem(0, saved.get(0));
+		legacyPixel = input.read("legacy_pixel", ItemStack.CODEC).orElse(saved.get(1));
+		pixelSample.setItem(0, sampleOf(input.read("pixel_sample", ItemStack.CODEC).orElse(legacyPixel)));
 		text = cleanText(input.getStringOr("text", ""));
 		speed = Math.clamp(input.getIntOr("speed", 5), MIN_SPEED, MAX_SPEED);
 		size = Math.clamp(input.getIntOr("size", BillboardFont.MIN_SIZE), BillboardFont.MIN_SIZE, BillboardFont.MAX_SIZE);
@@ -465,6 +504,12 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 	protected void saveAdditional(ValueOutput output) {
 		super.saveAdditional(output);
 		ContainerHelper.saveAllItems(output, items.getItems());
+		if (!pixelSample.isEmpty()) {
+			output.store("pixel_sample", ItemStack.CODEC, pixelSample.getItem(0));
+		}
+		if (!legacyPixel.isEmpty()) {
+			output.store("legacy_pixel", ItemStack.CODEC, legacyPixel);
+		}
 		output.putString("text", text);
 		output.putInt("speed", speed);
 		output.putInt("size", size);
@@ -487,7 +532,7 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 
 	@Override
 	public AbstractContainerMenu createMenu(int containerId, Inventory inventory, Player player) {
-		return new BillboardEngineMenu(containerId, inventory, items, data, this);
+		return new BillboardEngineMenu(containerId, inventory, items, pixelSample, data, this);
 	}
 
 	@Override

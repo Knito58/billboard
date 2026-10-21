@@ -16,8 +16,10 @@ On a server, install it on the server and on every client. [CC: Tweaked](https:/
    While you hold the wand, the action bar shows the size. Sneak + right-click clears the corners.
 3. Place the engine behind the wall, at most 16 blocks away. The text is read from the other side,
    so the engine stays hidden and can sit safely inside a building.
-4. Open the engine, put the wand in the left slot and a block (e.g. gold block) in the right slot.
-   The block is not used up; it only sets what the letters are made of.
+4. Open the engine and put the wand in the left slot. Then click the right slot with a full block
+   (e.g. gold block), or drag one there from [JEI](https://modrinth.com/mod/jei) or
+   [REI](https://modrinth.com/mod/rei). The slot only keeps a faded copy as a setting: the block stays
+   in your inventory and is never used up. Click with an empty hand to clear it.
 5. Type a text and press **Go**. The text scrolls from right to left; **-** / **+** set the speed
    (1 = one column per second, 10 = ten). **Size** - / + sets the letter size from 1 to 9.
    **Stop** freezes it, **Restore** puts the wall back.
@@ -54,6 +56,7 @@ local b = peripheral.find("billboard_engine")
 b.setText("Hello " .. textutils.formatTime(os.time()))  -- up to 64 characters, used by the next go()
 b.setSpeed(7)          -- 1 to 10, takes effect at once
 b.setSize(3)           -- letter size 1 to 9, takes effect at once (also on a stopped text)
+b.setPixel("minecraft:gold_block")  -- any full block, no item needed; getPixel() reads it
 print(b.go())          -- true, or false plus a reason such as "need_wand", "need_pixel", "overlap"
 b.stop()               -- freeze the text
 b.restore()            -- put the wall back

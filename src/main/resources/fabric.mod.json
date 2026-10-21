@@ -19,6 +19,12 @@
 		],
 		"client": [
 			"de.knito.billboard.client.BillboardClient"
+		],
+		"jei_mod_plugin": [
+			"de.knito.billboard.client.compat.BillboardJeiPlugin"
+		],
+		"rei_client": [
+			"de.knito.billboard.client.compat.BillboardReiPlugin"
 		]
 	},
 	"depends": {
@@ -28,7 +34,9 @@
 		"fabric-api": "*"
 	},
 	"suggests": {
-		"computercraft": "*"
+		"computercraft": "*",
+		"jei": "*",
+		"roughlyenoughitems": "*"
 	},
 	"mixins": [
 		"billboard.mixins.json"

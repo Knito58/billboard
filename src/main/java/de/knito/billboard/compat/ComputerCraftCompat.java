@@ -1,7 +1,10 @@
 package de.knito.billboard.compat;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.ItemStack;
 
 import dan200.computercraft.api.lua.LuaException;
 import dan200.computercraft.api.lua.LuaFunction;
@@ -84,6 +87,25 @@ public final class ComputerCraftCompat {
 				throw new LuaException("Size must be " + BillboardFont.MIN_SIZE + " to " + BillboardFont.MAX_SIZE);
 			}
 			engine.applySettings(engine.text(), engine.speed(), size);
+		}
+
+		/** The pixel block's id, such as "minecraft:gold_block", or nil if none is set. */
+		@LuaFunction(mainThread = true)
+		public final MethodResult getPixel() {
+			ItemStack sample = engine.pixelSample();
+			return sample.isEmpty() ? MethodResult.of() : MethodResult.of(BuiltInRegistries.ITEM.getKey(sample.getItem()).toString());
+		}
+
+		/** Sets the pixel block for the next go(), like the sample slot. Only the id is stored; no item is needed. */
+		@LuaFunction(mainThread = true)
+		public final void setPixel(String id) throws LuaException {
+			Identifier identifier = Identifier.tryParse(id);
+			ItemStack stack = identifier == null ? ItemStack.EMPTY
+					: BuiltInRegistries.ITEM.getOptional(identifier).map(ItemStack::new).orElse(ItemStack.EMPTY);
+			if (!BillboardEngineBlockEntity.isValidPixel(stack)) {
+				throw new LuaException(id + " is not a full block that can be a pixel");
+			}
+			engine.setPixelSample(stack);
 		}
 
 		@LuaFunction(mainThread = true)

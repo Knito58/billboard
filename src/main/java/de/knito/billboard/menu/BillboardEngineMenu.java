@@ -10,6 +10,7 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
@@ -34,6 +35,7 @@ public class BillboardEngineMenu extends AbstractContainerMenu {
 	public static final int INVENTORY_Y = 130;
 
 	private final Container container;
+	private final Container pixelSample;
 	private final ContainerData data;
 	private final String initialText;
 	/** Only set on the server. */
@@ -41,24 +43,26 @@ public class BillboardEngineMenu extends AbstractContainerMenu {
 
 	/** Client side. */
 	public BillboardEngineMenu(int containerId, Inventory inventory, OpenData openData) {
-		this(containerId, inventory, new SimpleContainer(2), new SimpleContainerData(4), null, openData.text());
+		this(containerId, inventory, new SimpleContainer(1), new SimpleContainer(1), new SimpleContainerData(4), null, openData.text());
 	}
 
 	/** Server side. */
-	public BillboardEngineMenu(int containerId, Inventory inventory, Container container, ContainerData data, BillboardEngineBlockEntity engine) {
-		this(containerId, inventory, container, data, engine, "");
+	public BillboardEngineMenu(int containerId, Inventory inventory, Container container, Container pixelSample, ContainerData data, BillboardEngineBlockEntity engine) {
+		this(containerId, inventory, container, pixelSample, data, engine, "");
 	}
 
-	private BillboardEngineMenu(int containerId, Inventory inventory, Container container, ContainerData data, BillboardEngineBlockEntity engine, String initialText) {
+	private BillboardEngineMenu(int containerId, Inventory inventory, Container container, Container pixelSample, ContainerData data, BillboardEngineBlockEntity engine, String initialText) {
 		super(ModMenus.BILLBOARD_ENGINE, containerId);
-		checkContainerSize(container, 2);
+		checkContainerSize(container, 1);
+		checkContainerSize(pixelSample, 1);
 		checkContainerDataCount(data, 4);
 		this.container = container;
+		this.pixelSample = pixelSample;
 		this.data = data;
 		this.engine = engine;
 		this.initialText = initialText;
 
-		addSlot(new Slot(container, BillboardEngineBlockEntity.SLOT_WAND, WAND_X, SLOTS_Y) {
+		addSlot(new Slot(container, 0, WAND_X, SLOTS_Y) {
 			@Override
 			public boolean mayPlace(ItemStack stack) {
 				return BillboardEngineBlockEntity.isValidWand(stack);
@@ -69,10 +73,16 @@ public class BillboardEngineMenu extends AbstractContainerMenu {
 				return 1;
 			}
 		});
-		addSlot(new Slot(container, BillboardEngineBlockEntity.SLOT_PIXEL, PIXEL_X, SLOTS_Y) {
+		// A sample slot: clicking with a block copies it in, the block stays with the player. See clicked().
+		addSlot(new Slot(pixelSample, 0, PIXEL_X, SLOTS_Y) {
 			@Override
 			public boolean mayPlace(ItemStack stack) {
-				return BillboardEngineBlockEntity.isValidPixel(stack);
+				return false;
+			}
+
+			@Override
+			public boolean mayPickup(Player player) {
+				return false;
 			}
 		});
 		addStandardInventorySlots(inventory, 8, INVENTORY_Y);
@@ -108,6 +118,43 @@ public class BillboardEngineMenu extends AbstractContainerMenu {
 		return container.stillValid(player);
 	}
 
+	/** Sets the pixel block sample. Anything that is not a valid pixel block clears it. */
+	public void setPixelSample(ItemStack stack) {
+		pixelSample.setItem(0, BillboardEngineBlockEntity.sampleOf(stack));
+		pixelSample.setChanged();
+	}
+
+	@Override
+	public void clicked(int slotIndex, int button, ContainerInput input, Player player) {
+		if (slotIndex != BillboardEngineBlockEntity.SLOT_PIXEL) {
+			super.clicked(slotIndex, button, input, player);
+			return;
+		}
+		// Runs on both sides, so the client shows the change right away. No item ever moves.
+		switch (input) {
+			case PICKUP -> {
+				ItemStack carried = getCarried();
+				if (carried.isEmpty() || BillboardEngineBlockEntity.isValidPixel(carried)) {
+					setPixelSample(carried);
+				}
+			}
+			case QUICK_MOVE -> setPixelSample(ItemStack.EMPTY);
+			case SWAP -> {
+				ItemStack hotbar = player.getInventory().getItem(button);
+				if (BillboardEngineBlockEntity.isValidPixel(hotbar)) {
+					setPixelSample(hotbar);
+				}
+			}
+			default -> {
+			}
+		}
+	}
+
+	@Override
+	public boolean canDragTo(Slot slot) {
+		return slot.index != BillboardEngineBlockEntity.SLOT_PIXEL && super.canDragTo(slot);
+	}
+
 	@Override
 	public ItemStack quickMoveStack(Player player, int slotIndex) {
 		ItemStack clicked = ItemStack.EMPTY;
@@ -115,7 +162,7 @@ public class BillboardEngineMenu extends AbstractContainerMenu {
 		if (slot != null && slot.hasItem()) {
 			ItemStack stack = slot.getItem();
 			clicked = stack.copy();
-			if (slotIndex < 2) {
+			if (slotIndex == BillboardEngineBlockEntity.SLOT_WAND) {
 				if (!moveItemStackTo(stack, 2, slots.size(), true)) {
 					return ItemStack.EMPTY;
 				}
@@ -124,9 +171,9 @@ public class BillboardEngineMenu extends AbstractContainerMenu {
 					return ItemStack.EMPTY;
 				}
 			} else if (BillboardEngineBlockEntity.isValidPixel(stack)) {
-				if (!moveItemStackTo(stack, 1, 2, false)) {
-					return ItemStack.EMPTY;
-				}
+				// Shift-click on a block copies it into the sample slot; the stack stays where it is.
+				setPixelSample(stack);
+				return ItemStack.EMPTY;
 			} else {
 				return ItemStack.EMPTY;
 			}
