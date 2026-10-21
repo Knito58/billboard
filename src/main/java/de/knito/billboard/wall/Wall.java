@@ -20,7 +20,7 @@ public record Wall(BlockPos min, BlockPos max, Direction facing) {
 			return new Result(wall, null);
 		}
 
-		static Result fail(Component error) {
+		public static Result fail(Component error) {
 			return new Result(null, error);
 		}
 

@@ -1,6 +1,7 @@
 package de.knito.billboard.block;
 
 import java.util.Optional;
+import java.util.function.ToIntFunction;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -197,7 +198,12 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 
 	/** Checks everything, backs up the wall and draws the text at the wall's left edge. Returns the message for the player. */
 	public Component go() {
-		return start(false);
+		return start(BillboardPainter::startOffset);
+	}
+
+	/** Like {@link #go()}, but the text starts at the given wall column (0 = left edge), e.g. to stand at the right end. */
+	public Component goAt(int column) {
+		return start(wall -> wall.width() - Math.clamp(column, 0, wall.width()));
 	}
 
 	/**
@@ -206,7 +212,7 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 	 */
 	public Component runOff() {
 		if (!isShowing()) {
-			Component message = start(true);
+			Component message = start(wall -> 0);
 			if (!running) {
 				return message;
 			}
@@ -217,15 +223,30 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 		return Component.translatable("message.billboard.running_off");
 	}
 
-	private Component start(boolean fromRight) {
+	/** The wall marked by the wand in the engine, or the reason why there is none. */
+	public Wall.Result wandWall() {
+		ItemStack wand = items.getItem(0);
+		WandCorners corners = wand.getOrDefault(ModComponents.WAND_CORNERS, WandCorners.EMPTY);
+		if (!isValidWand(wand) || !corners.isComplete()) {
+			return Wall.Result.fail(Component.translatable("message.billboard.need_wand"));
+		}
+		GlobalPos a = corners.first().orElseThrow();
+		GlobalPos b = corners.second().orElseThrow();
+		if (level == null || !a.dimension().equals(level.dimension()) || !b.dimension().equals(level.dimension())) {
+			return Wall.Result.fail(Component.translatable("message.billboard.other_dimension"));
+		}
+		return Wall.of(a.pos(), b.pos(), worldPosition);
+	}
+
+	/** @param firstOffset the scroll offset of the first frame for the given wall */
+	private Component start(ToIntFunction<Wall> firstOffset) {
 		if (!(level instanceof ServerLevel serverLevel)) {
 			return Component.empty();
 		}
 
-		ItemStack wand = items.getItem(0);
-		WandCorners corners = wand.getOrDefault(ModComponents.WAND_CORNERS, WandCorners.EMPTY);
-		if (!isValidWand(wand) || !corners.isComplete()) {
-			return Component.translatable("message.billboard.need_wand");
+		Wall.Result result = wandWall();
+		if (!result.isOk()) {
+			return result.error();
 		}
 		ItemStack pixelStack = pixelSample.getItem(0);
 		if (!isValidPixel(pixelStack)) {
@@ -233,17 +254,6 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 		}
 		if (text.isBlank()) {
 			return Component.translatable("message.billboard.need_text");
-		}
-
-		GlobalPos a = corners.first().orElseThrow();
-		GlobalPos b = corners.second().orElseThrow();
-		if (!a.dimension().equals(serverLevel.dimension()) || !b.dimension().equals(serverLevel.dimension())) {
-			return Component.translatable("message.billboard.other_dimension");
-		}
-
-		Wall.Result result = Wall.of(a.pos(), b.pos(), worldPosition);
-		if (!result.isOk()) {
-			return result.error();
 		}
 		Wall wall = result.wall();
 
@@ -263,7 +273,7 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 		shownSize = size;
 		bitmap = BillboardFont.render(shownText, shownSize);
 		pixel = ((BlockItem) pixelStack.getItem()).getBlock().defaultBlockState();
-		offset = fromRight ? 0 : BillboardPainter.startOffset(wall);
+		offset = firstOffset.applyAsInt(wall);
 		ticks = 0;
 		once = false;
 		BillboardPainter.paint(serverLevel, wall, bitmap, offset, pixel);
