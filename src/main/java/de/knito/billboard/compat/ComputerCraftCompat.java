@@ -11,6 +11,7 @@ import dan200.computercraft.api.peripheral.PeripheralLookup;
 
 import de.knito.billboard.ModBlockEntities;
 import de.knito.billboard.block.BillboardEngineBlockEntity;
+import de.knito.billboard.wall.BillboardFont;
 
 /** Makes the engine a CC: Tweaked peripheral. Only loaded when CC: Tweaked is installed. */
 public final class ComputerCraftCompat {
@@ -54,7 +55,7 @@ public final class ComputerCraftCompat {
 			if (text.length() > BillboardEngineBlockEntity.MAX_TEXT_LENGTH) {
 				throw new LuaException("Text is longer than " + BillboardEngineBlockEntity.MAX_TEXT_LENGTH + " characters");
 			}
-			engine.applySettings(text, engine.speed());
+			engine.applySettings(text, engine.speed(), engine.size());
 		}
 
 		@LuaFunction(mainThread = true)
@@ -68,7 +69,21 @@ public final class ComputerCraftCompat {
 			if (speed < BillboardEngineBlockEntity.MIN_SPEED || speed > BillboardEngineBlockEntity.MAX_SPEED) {
 				throw new LuaException("Speed must be " + BillboardEngineBlockEntity.MIN_SPEED + " to " + BillboardEngineBlockEntity.MAX_SPEED);
 			}
-			engine.applySettings(engine.text(), speed);
+			engine.applySettings(engine.text(), speed, engine.size());
+		}
+
+		@LuaFunction(mainThread = true)
+		public final int getSize() {
+			return engine.size();
+		}
+
+		/** Letter size 1 to 9 (1 = 5x7 blocks per letter). Takes effect at once, also on a stopped text. */
+		@LuaFunction(mainThread = true)
+		public final void setSize(int size) throws LuaException {
+			if (size < BillboardFont.MIN_SIZE || size > BillboardFont.MAX_SIZE) {
+				throw new LuaException("Size must be " + BillboardFont.MIN_SIZE + " to " + BillboardFont.MAX_SIZE);
+			}
+			engine.applySettings(engine.text(), engine.speed(), size);
 		}
 
 		@LuaFunction(mainThread = true)

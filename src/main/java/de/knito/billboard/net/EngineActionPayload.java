@@ -9,8 +9,8 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import de.knito.billboard.Billboard;
 import de.knito.billboard.block.BillboardEngineBlockEntity;
 
-/** A button press in the engine screen. Always carries the current text and speed. */
-public record EngineActionPayload(Action action, String text, int speed) implements CustomPacketPayload {
+/** A button press in the engine screen. Always carries the current text, speed and letter size. */
+public record EngineActionPayload(Action action, String text, int speed, int size) implements CustomPacketPayload {
 	public enum Action {
 		SAVE, GO, STOP, RESTORE
 	}
@@ -21,6 +21,7 @@ public record EngineActionPayload(Action action, String text, int speed) impleme
 			ByteBufCodecs.idMapper(i -> Action.values()[Math.clamp(i, 0, Action.values().length - 1)], Action::ordinal), EngineActionPayload::action,
 			ByteBufCodecs.stringUtf8(BillboardEngineBlockEntity.MAX_TEXT_LENGTH * 4), EngineActionPayload::text,
 			ByteBufCodecs.VAR_INT, EngineActionPayload::speed,
+			ByteBufCodecs.VAR_INT, EngineActionPayload::size,
 			EngineActionPayload::new
 	);
 
