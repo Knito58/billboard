@@ -35,7 +35,7 @@ jobs:
         with:
           tag_name: ${{ env.TAG }}
           target_commitish: ${{ github.sha }}
-          name: Billboard ${{ env.TAG }} for Minecraft 26.3
+          name: Billboard Engine ${{ env.TAG }} for Minecraft 26.3
           body_path: CHANGELOG.md
           files: |
             build/libs/billboard-*.jar
