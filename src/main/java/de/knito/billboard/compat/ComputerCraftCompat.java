@@ -1,11 +1,17 @@
 package de.knito.billboard.compat;
 
+import java.nio.ByteBuffer;
+import java.util.Locale;
+import java.util.Map;
+
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
+import dan200.computercraft.api.lua.IArguments;
+import dan200.computercraft.api.lua.ILuaContext;
 import dan200.computercraft.api.lua.LuaException;
 import dan200.computercraft.api.lua.LuaFunction;
 import dan200.computercraft.api.lua.MethodResult;
@@ -15,6 +21,8 @@ import dan200.computercraft.api.peripheral.PeripheralLookup;
 import de.knito.billboard.ModBlockEntities;
 import de.knito.billboard.block.BillboardEngineBlockEntity;
 import de.knito.billboard.wall.BillboardFont;
+import de.knito.billboard.wall.Picture;
+import de.knito.billboard.wall.Wall;
 
 /** Makes the engine a CC: Tweaked peripheral. Only loaded when CC: Tweaked is installed. */
 public final class ComputerCraftCompat {
@@ -144,6 +152,92 @@ public final class ComputerCraftCompat {
 		@LuaFunction(mainThread = true)
 		public final MethodResult restore() {
 			return result(engine.restore(), "restored");
+		}
+
+		/**
+		 * Shows an image file on the wall: {@code drawImage(data [, options])}. data is the file's content
+		 * (PNG, JPEG, GIF or BMP) as a string; an animated GIF plays by itself. Options:
+		 * {@code fit = "fit" | "fill" | "stretch"}, {@code dither = true}, {@code loop = false}.
+		 * The file is read on the computer's own thread; only the wall work happens in the game tick.
+		 */
+		@LuaFunction
+		public final MethodResult drawImage(ILuaContext context, IArguments args) throws LuaException {
+			ByteBuffer buffer = args.getBytes(0);
+			byte[] data = new byte[buffer.remaining()];
+			buffer.get(data);
+			Map<?, ?> options = args.optTable(1, Map.of());
+			Picture.Fit fit = fit(options.get("fit"));
+			boolean dither = Boolean.TRUE.equals(options.get("dither"));
+			boolean loop = !Boolean.FALSE.equals(options.get("loop"));
+			Picture.Source source;
+			try {
+				source = Picture.decode(data);
+			} catch (Picture.PictureException e) {
+				throw new LuaException(e.getMessage());
+			}
+			return context.executeMainThreadTask(() -> {
+				try {
+					return result(engine.showPicture(source, fit, dither, loop), "picture_shown").getResult();
+				} catch (Picture.PictureException e) {
+					throw new LuaException(e.getMessage());
+				}
+			});
+		}
+
+		private static Picture.Fit fit(Object value) throws LuaException {
+			if (value == null) {
+				return Picture.Fit.FIT;
+			}
+			try {
+				return Picture.Fit.valueOf(value.toString().toUpperCase(Locale.ROOT));
+			} catch (IllegalArgumentException e) {
+				throw new LuaException("fit must be \"fit\", \"fill\" or \"stretch\"");
+			}
+		}
+
+		/**
+		 * Draws pixels made by the program: {@code drawPixels(x, y, width, height, data)}, x and y from 1 at the top left.
+		 * data holds 3 bytes per pixel (red, green, blue), or 4 with alpha (below 128 keeps the wall's own block), row by row.
+		 * Starts a picture on the marked wall if none is shown.
+		 */
+		@LuaFunction(mainThread = true)
+		public final MethodResult drawPixels(int x, int y, int width, int height, ByteBuffer data) throws LuaException {
+			if (width < 1 || height < 1 || width > Picture.MAX_SIDE || height > Picture.MAX_SIDE) {
+				throw new LuaException("Width and height must be 1 to " + Picture.MAX_SIDE);
+			}
+			int pixels = width * height;
+			int length = data.remaining();
+			if (length != pixels * 3 && length != pixels * 4) {
+				throw new LuaException("Expected " + pixels * 3 + " bytes (RGB) or " + pixels * 4 + " bytes (RGBA), got " + length);
+			}
+			byte[] bytes = new byte[length];
+			data.get(bytes);
+			return result(engine.drawPixels(x - 1, y - 1, width, height, bytes, length / pixels), "drawn");
+		}
+
+		/** Width and height of the wall a picture goes on (the shown one, else the one the wand marks), or false plus a reason. */
+		@LuaFunction(mainThread = true)
+		public final MethodResult getWallSize() {
+			Wall.Result wall = engine.pictureWall();
+			return wall.isOk() ? MethodResult.of(wall.wall().width(), wall.wall().height()) : result(wall.error(), "");
+		}
+
+		/** True while blocks of the current picture or frame are still being set. */
+		@LuaFunction(mainThread = true)
+		public final boolean isPainting() {
+			return engine.isPainting();
+		}
+
+		/** True while the wall shows a picture rather than text. */
+		@LuaFunction(mainThread = true)
+		public final boolean isShowingPicture() {
+			return engine.isShowingPicture();
+		}
+
+		/** Lets an animation stopped with stop() run again. */
+		@LuaFunction(mainThread = true)
+		public final boolean play() {
+			return engine.play();
 		}
 
 		/** Lua style: true on success, otherwise false plus a short reason such as "need_wand" or "overlap". */

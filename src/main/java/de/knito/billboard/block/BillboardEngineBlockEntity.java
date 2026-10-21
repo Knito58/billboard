@@ -42,6 +42,9 @@ import de.knito.billboard.menu.BillboardEngineMenu;
 import de.knito.billboard.wall.BackupData;
 import de.knito.billboard.wall.BillboardFont;
 import de.knito.billboard.wall.BillboardPainter;
+import de.knito.billboard.wall.BlockColors;
+import de.knito.billboard.wall.Picture;
+import de.knito.billboard.wall.PicturePlayer;
 import de.knito.billboard.wall.Wall;
 
 public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedMenuProvider<BillboardEngineMenu.OpenData> {
@@ -95,6 +98,10 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 	private boolean powered;
 	/** Text of the attached sign when it was last read; a running engine follows changes to it. */
 	private String signText = "";
+	/** Whether the wall shows a picture instead of text. Saved, so text commands leave such a wall alone after a restart. */
+	private boolean pictureShown;
+	/** Paints and plays the picture; not saved, the wall keeps its last picture after a restart. */
+	private PicturePlayer picture;
 
 	/** Synced to the open screen: 0 = speed, 1 = 1 while the wall shows text, 2 = 1 while running, 3 = letter size. */
 	private final ContainerData data = new ContainerData() {
@@ -103,7 +110,7 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 			return switch (index) {
 				case 0 -> speed;
 				case 1 -> isShowing() ? 1 : 0;
-				case 2 -> running ? 1 : 0;
+				case 2 -> isRunning() ? 1 : 0;
 				case 3 -> size;
 				default -> 0;
 			};
@@ -174,7 +181,7 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 	 * so a computer can let the letters grow or shrink. Waits for the next Go if the wall is not loaded.
 	 */
 	private void resizeShown() {
-		if (!(level instanceof ServerLevel serverLevel) || pixel == null) {
+		if (!(level instanceof ServerLevel serverLevel) || pixel == null || pictureShown) {
 			return;
 		}
 		BackupData backups = BackupData.get(serverLevel);
@@ -205,7 +212,7 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 	 * continues from where it is; on an idle wall the text first comes in from the right.
 	 */
 	public Component runOff() {
-		if (!isShowing()) {
+		if (pictureShown || !isShowing()) {
 			Component message = start(true);
 			if (!running) {
 				return message;
@@ -235,30 +242,18 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 			return Component.translatable("message.billboard.need_text");
 		}
 
-		GlobalPos a = corners.first().orElseThrow();
-		GlobalPos b = corners.second().orElseThrow();
-		if (!a.dimension().equals(serverLevel.dimension()) || !b.dimension().equals(serverLevel.dimension())) {
-			return Component.translatable("message.billboard.other_dimension");
-		}
-
-		Wall.Result result = Wall.of(a.pos(), b.pos(), worldPosition);
+		Wall.Result result = checkWall(serverLevel);
 		if (!result.isOk()) {
 			return result.error();
 		}
 		Wall wall = result.wall();
 
-		BackupData backups = BackupData.get(serverLevel);
-		if (backups.overlapsOther(worldPosition, wall)) {
-			return Component.translatable("message.billboard.overlap");
-		}
-		Optional<Component> blocked = checkWallBlocks(serverLevel, wall);
-		if (blocked.isPresent()) {
-			return blocked.get();
-		}
-
 		// Put back an older billboard of this engine first, so the backup always holds the real wall.
+		BackupData backups = BackupData.get(serverLevel);
 		backups.restore(serverLevel, worldPosition);
 		backups.backup(serverLevel, worldPosition, wall);
+		pictureShown = false;
+		picture = null;
 		shownText = text;
 		shownSize = size;
 		bitmap = BillboardFont.render(shownText, shownSize);
@@ -272,6 +267,110 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 		return Component.translatable("message.billboard.started", wall.width(), wall.height());
 	}
 
+	/** The wall the wand marks, if it can be used: same dimension, right size, no other billboard, no block entities. */
+	private Wall.Result checkWall(ServerLevel serverLevel) {
+		Wall.Result result = markedWall(serverLevel);
+		if (!result.isOk()) {
+			return result;
+		}
+		Wall wall = result.wall();
+		if (BackupData.get(serverLevel).overlapsOther(worldPosition, wall)) {
+			return new Wall.Result(null, Component.translatable("message.billboard.overlap"));
+		}
+		Optional<Component> blocked = checkWallBlocks(serverLevel, wall);
+		return blocked.map(error -> new Wall.Result(null, error)).orElse(result);
+	}
+
+	/** The wall between the wand's corners, checked only for shape, size and distance. */
+	private Wall.Result markedWall(ServerLevel serverLevel) {
+		ItemStack wand = items.getItem(0);
+		WandCorners corners = wand.getOrDefault(ModComponents.WAND_CORNERS, WandCorners.EMPTY);
+		if (!isValidWand(wand) || !corners.isComplete()) {
+			return new Wall.Result(null, Component.translatable("message.billboard.need_wand"));
+		}
+		GlobalPos a = corners.first().orElseThrow();
+		GlobalPos b = corners.second().orElseThrow();
+		if (!a.dimension().equals(serverLevel.dimension()) || !b.dimension().equals(serverLevel.dimension())) {
+			return new Wall.Result(null, Component.translatable("message.billboard.other_dimension"));
+		}
+		return Wall.of(a.pos(), b.pos(), worldPosition);
+	}
+
+	/** Size of the wall a picture would get: the one shown now, otherwise the one the wand marks. */
+	public Wall.Result pictureWall() {
+		if (!(level instanceof ServerLevel serverLevel)) {
+			return new Wall.Result(null, Component.empty());
+		}
+		Wall shown = BackupData.get(serverLevel).wallOf(worldPosition);
+		return shown != null ? new Wall.Result(shown, null) : markedWall(serverLevel);
+	}
+
+	/**
+	 * Shows an image (an animated one plays by itself). The wall the wand marks is used; if it is the wall
+	 * shown now, only the blocks that change are set, so one picture can follow another without flicker.
+	 */
+	public Component showPicture(Picture.Source source, Picture.Fit fit, boolean dither, boolean loop) throws Picture.PictureException {
+		if (!(level instanceof ServerLevel serverLevel)) {
+			return Component.empty();
+		}
+		Wall.Result result = checkWall(serverLevel);
+		if (!result.isOk()) {
+			return result.error();
+		}
+		Wall wall = result.wall();
+		Picture rendered = Picture.render(source, wall.width(), wall.height(), fit, dither, BlockColors.palette());
+		install(serverLevel, wall, rendered, loop);
+		return Component.translatable("message.billboard.picture_shown", wall.width(), wall.height());
+	}
+
+	/**
+	 * Draws raw pixels (3 or 4 bytes each, row by row) at a position of the shown picture; x and y count from 0
+	 * at the top left. Starts a picture on the marked wall if none is shown; an animation stops on its current frame.
+	 */
+	public Component drawPixels(int x, int y, int w, int h, byte[] data, int bytesPerPixel) {
+		if (!(level instanceof ServerLevel serverLevel)) {
+			return Component.empty();
+		}
+		if (picture == null) {
+			Wall.Result result = checkWall(serverLevel);
+			if (!result.isOk()) {
+				return result.error();
+			}
+			Wall wall = result.wall();
+			install(serverLevel, wall, Picture.blank(wall.width(), wall.height(), BlockColors.palette()), false);
+		}
+		picture = picture.still();
+		picture.picture().blit(x, y, w, h, data, bytesPerPixel);
+		picture.changed();
+		return Component.translatable("message.billboard.drawn");
+	}
+
+	private void install(ServerLevel serverLevel, Wall wall, Picture rendered, boolean loop) {
+		BackupData backups = BackupData.get(serverLevel);
+		PicturePlayer previous = null;
+		if (wall.equals(backups.wallOf(worldPosition))) {
+			// Same wall: keep the backup and let the new picture overwrite what is there.
+			previous = picture;
+		} else {
+			backups.restore(serverLevel, worldPosition);
+			backups.backup(serverLevel, worldPosition, wall);
+		}
+		picture = new PicturePlayer(rendered, previous, loop);
+		pictureShown = true;
+		running = false;
+		once = false;
+		setChanged();
+	}
+
+	public boolean isPainting() {
+		return picture != null && picture.isPainting();
+	}
+
+	/** Lets a stopped animation run again. */
+	public boolean play() {
+		return picture != null && picture.play();
+	}
+
 	/** Ticks between two scroll steps: speed 1 = one column per second, speed 10 = ten per second. */
 	private int interval() {
 		return 22 - 2 * speed;
@@ -283,7 +382,9 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 			engine.legacyPixel = ItemStack.EMPTY;
 			engine.setChanged();
 		}
-		if (engine.running && level instanceof ServerLevel serverLevel) {
+		if (engine.picture != null && level instanceof ServerLevel serverLevel) {
+			engine.tickPicture(serverLevel);
+		} else if (engine.running && level instanceof ServerLevel serverLevel) {
 			if (level.getGameTime() % 20 == 0) {
 				engine.followSign();
 			}
@@ -358,6 +459,20 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 		return sb.toString();
 	}
 
+	private void tickPicture(ServerLevel serverLevel) {
+		BackupData backups = BackupData.get(serverLevel);
+		Wall wall = backups.wallOf(worldPosition);
+		if (wall == null) {
+			picture = null;
+			pictureShown = false;
+			setChanged();
+			return;
+		}
+		if (isLoaded(serverLevel, wall)) {
+			picture.tick(serverLevel, worldPosition, backups, wall);
+		}
+	}
+
 	private void scroll(ServerLevel serverLevel) {
 		if (++ticks < interval()) {
 			return;
@@ -424,8 +539,13 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 		return size;
 	}
 
+	/** Text scrolling, or an animation playing. */
 	public boolean isRunning() {
-		return running;
+		return picture != null ? picture.isPlaying() : running;
+	}
+
+	public boolean isShowingPicture() {
+		return pictureShown && isShowing();
 	}
 
 	public boolean isRunningOff() {
@@ -447,6 +567,10 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 	}
 
 	public Component stop() {
+		if (picture != null && picture.isPlaying()) {
+			picture.stop();
+			return Component.translatable("message.billboard.stopped");
+		}
 		if (!running) {
 			return Component.translatable("message.billboard.not_running");
 		}
@@ -459,6 +583,8 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 	public Component restore() {
 		running = false;
 		once = false;
+		picture = null;
+		pictureShown = false;
 		setChanged();
 		if (level instanceof ServerLevel serverLevel && BackupData.get(serverLevel).restore(serverLevel, worldPosition)) {
 			return Component.translatable("message.billboard.restored");
@@ -497,6 +623,7 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 		offset = Math.max(0, input.getIntOr("offset", 0));
 		powered = input.getBooleanOr("powered", false);
 		signText = input.getStringOr("sign_text", "");
+		pictureShown = input.getBooleanOr("picture", false);
 		bitmap = null;
 	}
 
@@ -523,6 +650,7 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 		output.putInt("offset", offset);
 		output.putBoolean("powered", powered);
 		output.putString("sign_text", signText);
+		output.putBoolean("picture", pictureShown);
 	}
 
 	@Override

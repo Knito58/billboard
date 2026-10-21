@@ -1,0 +1,32 @@
+{
+	"replace": false,
+	"values": [
+		"minecraft:tnt",
+		"minecraft:carved_pumpkin",
+		"minecraft:note_block",
+		"minecraft:redstone_lamp",
+		"minecraft:redstone_ore",
+		"minecraft:deepslate_redstone_ore",
+		"minecraft:respawn_anchor",
+		"minecraft:bedrock",
+		"minecraft:reinforced_deepslate",
+		"minecraft:sponge",
+		"minecraft:wet_sponge",
+		"minecraft:budding_amethyst",
+		"minecraft:infested_stone",
+		"minecraft:infested_cobblestone",
+		"minecraft:infested_stone_bricks",
+		"minecraft:infested_mossy_stone_bricks",
+		"minecraft:infested_cracked_stone_bricks",
+		"minecraft:infested_chiseled_stone_bricks",
+		"minecraft:infested_deepslate",
+		"minecraft:copper_bulb",
+		"minecraft:waxed_copper_bulb",
+		"minecraft:exposed_copper_bulb",
+		"minecraft:waxed_exposed_copper_bulb",
+		"minecraft:weathered_copper_bulb",
+		"minecraft:waxed_weathered_copper_bulb",
+		"minecraft:oxidized_copper_bulb",
+		"minecraft:waxed_oxidized_copper_bulb"
+	]
+}

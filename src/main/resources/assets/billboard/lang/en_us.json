@@ -33,6 +33,8 @@
 	"message.billboard.not_loaded": "Part of the wall is not loaded. Come closer.",
 	"message.billboard.block_entity": "Can't use this wall: %s at %s %s %s.",
 	"message.billboard.started": "Billboard running on a %s x %s wall.",
+	"message.billboard.picture_shown": "Picture on a %s x %s wall.",
+	"message.billboard.drawn": "Pixels drawn.",
 	"message.billboard.not_running": "Nothing is running.",
 	"message.billboard.stopped": "Stopped. The text stays where it is until Go or Restore.",
 	"message.billboard.restored": "Wall restored.",

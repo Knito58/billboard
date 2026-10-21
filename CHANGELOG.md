@@ -7,6 +7,11 @@
   Blocks can also be dragged there from JEI or REI. Breaking the engine drops only the wand.
 - ComputerCraft: `setPixel("minecraft:gold_block")` and `getPixel()` choose the pixel block from Lua.
 - Engines from older versions hand their real pixel blocks back (they pop out on top of the engine).
+- Pictures and animations from ComputerCraft: `drawImage(data)` shows a PNG, JPEG, GIF or BMP on the wall,
+  every pixel as the block with the nearest color (about 260 vanilla blocks, all free). Animated GIFs play by themselves.
+  `drawPixels` draws pixels made by a Lua program; `getWallSize`, `isPainting`, `isShowingPicture`, `play`.
+- Bigger walls: up to 256 x 256 by default, up to 512 x 384 with `config/billboard.properties`.
+- New picture blocks are spread over several ticks (`blocks_per_tick`), so big walls don't freeze the server.
 
 ## Billboard Engine 1.0.1 for Minecraft 26.3 (Fabric)
 
