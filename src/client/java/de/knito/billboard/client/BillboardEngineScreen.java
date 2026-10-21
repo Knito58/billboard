@@ -1,14 +1,21 @@
 package de.knito.billboard.client;
 
+import java.util.List;
+
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.Rect2i;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 
@@ -16,6 +23,7 @@ import de.knito.billboard.Billboard;
 import de.knito.billboard.block.BillboardEngineBlockEntity;
 import de.knito.billboard.menu.BillboardEngineMenu;
 import de.knito.billboard.net.EngineActionPayload;
+import de.knito.billboard.net.PixelSamplePayload;
 
 public class BillboardEngineScreen extends AbstractContainerScreen<BillboardEngineMenu> {
 	private static final Identifier BACKGROUND = Billboard.id("textures/gui/billboard_engine.png");
@@ -75,6 +83,19 @@ public class BillboardEngineScreen extends AbstractContainerScreen<BillboardEngi
 		ClientPlayNetworking.send(new EngineActionPayload(action, textBox.getValue(), currentSpeed()));
 	}
 
+	/** Screen area of the pixel slot, for blocks dragged from JEI or REI. */
+	public Rect2i pixelSlotArea() {
+		return new Rect2i(leftPos + BillboardEngineMenu.PIXEL_X, topPos + BillboardEngineMenu.SLOTS_Y, 16, 16);
+	}
+
+	/** Sets the pixel sample from a recipe viewer. The player doesn't need to own the block: nothing is used up anyway. */
+	public void choosePixel(ItemStack stack) {
+		if (BillboardEngineBlockEntity.isValidPixel(stack)) {
+			menu.setPixelSample(stack);
+			ClientPlayNetworking.send(new PixelSamplePayload(BuiltInRegistries.ITEM.getKey(stack.getItem())));
+		}
+	}
+
 	public void setStatus(Component message) {
 		status = message;
 	}
@@ -132,8 +153,27 @@ public class BillboardEngineScreen extends AbstractContainerScreen<BillboardEngi
 	}
 
 	@Override
+	protected void extractSlot(GuiGraphicsExtractor graphics, Slot slot, int mouseX, int mouseY) {
+		super.extractSlot(graphics, slot, mouseX, mouseY);
+		// Fade the sample like a ghost, so it doesn't look like a real item in the engine.
+		if (slot.index == BillboardEngineBlockEntity.SLOT_PIXEL && slot.hasItem()) {
+			graphics.nextStratum();
+			graphics.fill(slot.x, slot.y, slot.x + 16, slot.y + 16, 0x808B8B8B);
+		}
+	}
+
+	@Override
 	protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-		super.extractTooltip(graphics, mouseX, mouseY);
+		if (hoveredSlot != null && hoveredSlot.index == BillboardEngineBlockEntity.SLOT_PIXEL && hoveredSlot.hasItem()
+				&& menu.getCarried().isEmpty()) {
+			graphics.setComponentTooltipForNextFrame(font, List.of(
+					hoveredSlot.getItem().getHoverName(),
+					Component.translatable("gui.billboard.sample_1").withStyle(ChatFormatting.GRAY),
+					Component.translatable("gui.billboard.sample_2").withStyle(ChatFormatting.GRAY)
+			), mouseX, mouseY);
+		} else {
+			super.extractTooltip(graphics, mouseX, mouseY);
+		}
 		if (hoveredSlot != null && !hoveredSlot.hasItem() && menu.getCarried().isEmpty()) {
 			if (hoveredSlot.index == BillboardEngineBlockEntity.SLOT_WAND) {
 				graphics.setTooltipForNextFrame(Component.translatable("gui.billboard.slot_wand"), mouseX, mouseY);

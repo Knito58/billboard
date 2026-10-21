@@ -16,8 +16,10 @@ On a server, install it on the server and on every client. [CC: Tweaked](https:/
    While you hold the wand, the action bar shows the size. Sneak + right-click clears the corners.
 3. Place the engine behind the wall, at most 16 blocks away. The text is read from the other side,
    so the engine stays hidden and can sit safely inside a building.
-4. Open the engine, put the wand in the left slot and a block (e.g. gold block) in the right slot.
-   The block is not used up; it only sets what the letters are made of.
+4. Open the engine and put the wand in the left slot. Then click the right slot with a full block
+   (e.g. gold block), or drag one there from [JEI](https://modrinth.com/mod/jei) or
+   [REI](https://modrinth.com/mod/rei). The slot only keeps a faded copy as a setting: the block stays
+   in your inventory and is never used up. Click with an empty hand to clear it.
 5. Type a text and press **Go**. The text scrolls from right to left; **-** / **+** set the speed
    (1 = one column per second, 10 = ten). **Stop** freezes it, **Restore** puts the wall back.
    Breaking the engine also restores the wall.

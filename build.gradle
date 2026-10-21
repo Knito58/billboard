@@ -15,6 +15,19 @@ repositories {
 			includeGroup("cc.tweaked")
 		}
 	}
+	maven {
+		url = "https://maven.blamejared.com"
+		content {
+			includeGroup("mezz.jei")
+		}
+	}
+	maven {
+		url = "https://maven.shedaniel.me"
+		content {
+			includeGroup("me.shedaniel")
+			includeGroup("me.shedaniel.cloth")
+		}
+	}
 }
 
 loom {
@@ -39,6 +52,14 @@ dependencies {
 	// CC: Tweaked is optional: compiled against, but not needed at runtime.
 	compileOnly("cc.tweaked:cc-tweaked-${project.minecraft_version}-core-api:${project.cc_tweaked_version}") { transitive = false }
 	compileOnly("cc.tweaked:cc-tweaked-${project.minecraft_version}-fabric-api:${project.cc_tweaked_version}") { transitive = false }
+
+	// JEI and REI are optional too: drag a block from them onto the pixel slot.
+	// JEI also runs in the dev client, so this can be tried from IDEA.
+	compileOnly("mezz.jei:jei-${project.minecraft_version}-common-api:${project.jei_version}") { transitive = false }
+	compileOnly("mezz.jei:jei-${project.minecraft_version}-fabric-api:${project.jei_version}") { transitive = false }
+	localRuntime("mezz.jei:jei-${project.minecraft_version}-fabric:${project.jei_version}") { transitive = false }
+	compileOnly("me.shedaniel:RoughlyEnoughItems-api-fabric:${project.rei_version}") { transitive = false }
+	compileOnly("me.shedaniel.cloth:basic-math:0.6.1") { transitive = false }
 }
 
 processResources {
