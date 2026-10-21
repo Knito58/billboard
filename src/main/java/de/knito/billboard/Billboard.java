@@ -26,6 +26,7 @@ public class Billboard implements ModInitializer {
 		ModMenus.initialize();
 		ModNetworking.initialize();
 		WallProtection.initialize();
+		BillboardCommand.initialize();
 		if (FabricLoader.getInstance().isModLoaded("computercraft")) {
 			ComputerCraftCompat.initialize();
 			LOGGER.info("CC: Tweaked found, the engine is a peripheral");

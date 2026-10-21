@@ -33,6 +33,8 @@
 	"message.billboard.stopped": "Angehalten. Der Text bleibt stehen bis Start oder Zurück.",
 	"message.billboard.restored": "Wand wiederhergestellt.",
 	"message.billboard.nothing_to_restore": "Nichts wiederherzustellen.",
+	"message.billboard.running_off": "Der Text läuft einmal von der Wand.",
+	"message.billboard.no_engine": "Keine Billboard-Steuerung bei %s %s %s.",
 	"gui.billboard.state_running": "Läuft",
 	"gui.billboard.state_stopped": "Angehalten",
 	"message.billboard.protected": "Dieser Block gehört zu einem aktiven Billboard. Erst an der Steuerung Zurück drücken.",

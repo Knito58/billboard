@@ -87,6 +87,18 @@ public final class ComputerCraftCompat {
 			return result(engine.go(), "started");
 		}
 
+		/** Lets the text run off the wall once, then restores the wall. Starts from the right edge if nothing is shown. */
+		@LuaFunction(mainThread = true)
+		public final MethodResult runOff() {
+			return result(engine.runOff(), "running_off");
+		}
+
+		/** True while a runOff() is still on its way; false once the wall is back. */
+		@LuaFunction(mainThread = true)
+		public final boolean isRunningOff() {
+			return engine.isRunningOff();
+		}
+
 		@LuaFunction(mainThread = true)
 		public final MethodResult stop() {
 			return result(engine.stop(), "stopped");
