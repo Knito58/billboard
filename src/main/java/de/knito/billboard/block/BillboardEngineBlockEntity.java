@@ -357,6 +357,16 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 		return running;
 	}
 
+	public ItemStack pixelSample() {
+		return pixelSample.getItem(0);
+	}
+
+	/** Sets the pixel block for the next go(). Anything that is not a valid pixel block clears it. */
+	public void setPixelSample(ItemStack stack) {
+		pixelSample.setItem(0, sampleOf(stack));
+		pixelSample.setChanged();
+	}
+
 	public boolean isShowingText() {
 		return isShowing();
 	}

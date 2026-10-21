@@ -52,6 +52,7 @@ With [CC: Tweaked](https://modrinth.com/mod/cc-tweaked) installed, the engine is
 local b = peripheral.find("billboard_engine")
 b.setText("Hello " .. textutils.formatTime(os.time()))  -- up to 64 characters, used by the next go()
 b.setSpeed(7)          -- 1 to 10, takes effect at once
+b.setPixel("minecraft:gold_block")  -- any full block, no item needed; getPixel() reads it
 print(b.go())          -- true, or false plus a reason such as "need_wand", "need_pixel", "overlap"
 b.stop()               -- freeze the text
 b.restore()            -- put the wall back
