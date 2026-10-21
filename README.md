@@ -58,7 +58,7 @@ b.getText(), b.getSpeed(), b.isRunning(), b.isShowing()
 
 ## How this mod is made
 
-Billboard is written by Claude AI (Anthropic), code and textures included.
+Billboard is written by Claude AI (Anthropic), code, textures and icon included.
 Knito58 decides what the mod does and tests every version in game.
 
 ## Build and run (Linux)
