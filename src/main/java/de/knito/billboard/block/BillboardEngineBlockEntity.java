@@ -128,18 +128,20 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 	}
 
 	/**
-	 * False if the wand marks a wall this engine does not touch, or one in another dimension.
-	 * A wand with fewer than two corners fits; the start then asks for the corners.
+	 * Why this wand can't go into this engine, or null if it fits: it needs both corners,
+	 * and they must mark a wall in this dimension that the engine touches.
 	 */
-	public static boolean wandFits(ItemStack wand, Level level, BlockPos engine) {
+	public static Component wandProblem(ItemStack wand, Level level, BlockPos engine) {
 		WandCorners corners = wand.getOrDefault(ModComponents.WAND_CORNERS, WandCorners.EMPTY);
 		if (!corners.isComplete()) {
-			return true;
+			return Component.translatable("message.billboard.need_wand");
 		}
 		GlobalPos a = corners.first().orElseThrow();
 		GlobalPos b = corners.second().orElseThrow();
-		return a.dimension().equals(level.dimension()) && b.dimension().equals(level.dimension())
-				&& Wall.isNextTo(a.pos(), b.pos(), engine);
+		if (!a.dimension().equals(level.dimension()) || !b.dimension().equals(level.dimension())) {
+			return Component.translatable("message.billboard.other_dimension");
+		}
+		return Wall.isNextTo(a.pos(), b.pos(), engine) ? null : Component.translatable("message.billboard.not_attached");
 	}
 
 	/** Pixel blocks must be plain full blocks: no block entity, nothing that falls. */
@@ -335,7 +337,7 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 			return shown.isTouchedBy(worldPosition) ? shown.facing() : null;
 		}
 		WandCorners corners = items.getItem(0).getOrDefault(ModComponents.WAND_CORNERS, WandCorners.EMPTY);
-		if (!corners.isComplete() || !wandFits(items.getItem(0), level, worldPosition)) {
+		if (wandProblem(items.getItem(0), level, worldPosition) != null) {
 			return null;
 		}
 		Wall.Result result = Wall.of(corners.first().orElseThrow().pos(), corners.second().orElseThrow().pos(), worldPosition);

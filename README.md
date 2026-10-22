@@ -16,7 +16,7 @@ On a server, install it on the server and on every client. [CC: Tweaked](https:/
    While you hold the wand, the action bar shows the size. Sneak + right-click clears the corners.
 3. Place the engine directly behind the wall, touching the back of one wall block with a full face
    (not diagonally). The text is read from the other side, so the engine stays hidden and can sit
-   safely inside a building. The engine only accepts a wand marked for the wall it touches, and it
+   safely inside a building. The engine only accepts a wand with both corners marked on the wall it touches, and it
    checks again at every start.
 4. Open the engine and put the wand in the left slot. Then click the right slot with a full block
    (e.g. gold block), or drag one there from [JEI](https://modrinth.com/mod/jei) or

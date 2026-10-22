@@ -43,6 +43,7 @@ public class BillboardEngineMenu extends AbstractContainerMenu {
 	private final Container pixelSample;
 	private final ContainerData data;
 	private final String initialText;
+	private long lastWarning = -1;
 	/** Only set on the server. */
 	private final BillboardEngineBlockEntity engine;
 
@@ -73,14 +74,17 @@ public class BillboardEngineMenu extends AbstractContainerMenu {
 				if (!BillboardEngineBlockEntity.isValidWand(stack)) {
 					return false;
 				}
-				// A wand for a wall this engine does not touch stays with the player.
-				if (!BillboardEngineBlockEntity.wandFits(stack, inventory.player.level(), enginePos)) {
-					if (inventory.player instanceof ServerPlayer serverPlayer) {
-						ServerPlayNetworking.send(serverPlayer, new EngineStatusPayload(Component.translatable("message.billboard.not_attached")));
-					}
-					return false;
+				// An unmarked wand, or one for a wall this engine does not touch, stays with the player.
+				Component problem = BillboardEngineBlockEntity.wandProblem(stack, inventory.player.level(), enginePos);
+				if (problem == null) {
+					return true;
 				}
-				return true;
+				// One click can ask several times; tell the player once per tick.
+				if (inventory.player instanceof ServerPlayer serverPlayer && serverPlayer.level().getGameTime() != lastWarning) {
+					lastWarning = serverPlayer.level().getGameTime();
+					tell(serverPlayer, problem);
+				}
+				return false;
 			}
 
 			@Override
@@ -102,6 +106,12 @@ public class BillboardEngineMenu extends AbstractContainerMenu {
 		});
 		addStandardInventorySlots(inventory, 8, INVENTORY_Y);
 		addDataSlots(data);
+	}
+
+	/** Shows a message in the engine screen's status line and, since that line is short, in the chat too. */
+	public static void tell(ServerPlayer player, Component message) {
+		ServerPlayNetworking.send(player, new EngineStatusPayload(message));
+		player.sendSystemMessage(message);
 	}
 
 	public BillboardEngineBlockEntity engine() {
