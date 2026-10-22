@@ -246,6 +246,9 @@ Requires Java 25.
 
 To publish a release: set `version` in `gradle.properties`, update `CHANGELOG.md`, merge to main, then
 on GitHub open *Actions → Release → Run workflow*. It builds the jar, tags `v<version>` and creates the release page.
+Then it uploads the jar to CurseForge, with the newest `CHANGELOG.md` section as changelog
+(needs the repository secret `CURSEFORGE_TOKEN`; without it this step is skipped).
+*Actions → CurseForge upload → Run workflow* with a tag such as `v1.1.0` uploads an existing release again.
 
 In IntelliJ IDEA: *File → Open* the project folder, wait for the Gradle import, then run the
 `Minecraft Client` run configuration.
