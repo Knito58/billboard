@@ -86,7 +86,7 @@ local data = file.readAll() file.close()
 -- local data = http.get("https://example.com/cat.gif", nil, true).readAll()   -- ... or from the web
 print(b.drawImage(data))                        -- true, or false plus a reason such as "need_wand"
 b.drawImage(data, { fit = "fill", dither = true, loop = false })
-while b.isPainting() do sleep(0.1) end          -- wait until every block is set
+while b.isPainting() do sleep(0.1) end          -- wait until the picture (an animation: its first frame) is on the wall
 b.stop()  b.play()                              -- freeze an animation, let it run again
 b.drawPixels(1, 1, 2, 1, "\255\0\0\0\0\255")    -- x, y (from 1, top left), width, height, RGB bytes
 b.restore()                                     -- put the wall back

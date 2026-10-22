@@ -222,7 +222,7 @@ public final class ComputerCraftCompat {
 			return wall.isOk() ? MethodResult.of(wall.wall().width(), wall.wall().height()) : result(wall.error(), "");
 		}
 
-		/** True while blocks of the current picture or frame are still being set. */
+		/** True until the picture, or the first frame of an animation, is completely on the wall. */
 		@LuaFunction(mainThread = true)
 		public final boolean isPainting() {
 			return engine.isPainting();

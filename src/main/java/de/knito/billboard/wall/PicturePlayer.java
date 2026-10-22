@@ -28,6 +28,8 @@ public final class PicturePlayer {
 	private int cursor;
 	private boolean playing;
 	private final boolean loop;
+	/** Set once the first frame (or a drawing) is completely on the wall. */
+	private boolean complete;
 
 	/** Starts a picture; the previous player of the same wall tells which blocks are already right. */
 	public PicturePlayer(Picture picture, PicturePlayer previous, boolean loop) {
@@ -42,6 +44,7 @@ public final class PicturePlayer {
 		}
 		playing = picture.frameCount() > 1;
 		showFrame(0);
+		complete = remaining == 0;
 	}
 
 	/** A player for drawing on: the frame on the wall now, as a still picture. */
@@ -63,9 +66,12 @@ public final class PicturePlayer {
 		return playing;
 	}
 
-	/** True while blocks of the current frame still have to be set. */
+	/**
+	 * True until the picture, or the first frame of an animation, is completely on the wall.
+	 * A big animation may never catch up with its own frames, so later frames don't count.
+	 */
 	public boolean isPainting() {
-		return remaining > 0;
+		return !complete;
 	}
 
 	/** Freezes the animation on the current frame. */
@@ -82,6 +88,7 @@ public final class PicturePlayer {
 	/** After drawing into the frame: count again which pixels need a new block. */
 	public void changed() {
 		showFrame(frame);
+		complete = remaining == 0;
 	}
 
 	private void showFrame(int index) {
@@ -101,6 +108,7 @@ public final class PicturePlayer {
 		ticksInFrame++;
 		if (remaining > 0) {
 			paint(level, engine, backups, wall);
+			complete |= remaining == 0;
 		}
 		if (playing && remaining == 0 && ticksInFrame >= picture.delay(frame)) {
 			int next = frame + 1;
