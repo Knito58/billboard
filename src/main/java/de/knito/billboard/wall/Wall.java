@@ -12,7 +12,6 @@ import de.knito.billboard.BillboardConfig;
  * Column 0 is the viewer's left edge, row 0 is the top row.
  */
 public record Wall(BlockPos min, BlockPos max, Direction facing) {
-	public static final int MAX_ENGINE_DISTANCE = 16;
 
 	/** Either a wall or the reason why there is none. */
 	public record Result(Wall wall, Component error) {
@@ -20,7 +19,7 @@ public record Wall(BlockPos min, BlockPos max, Direction facing) {
 			return new Result(wall, null);
 		}
 
-		static Result fail(Component error) {
+		public static Result fail(Component error) {
 			return new Result(null, error);
 		}
 
@@ -30,8 +29,8 @@ public record Wall(BlockPos min, BlockPos max, Direction facing) {
 	}
 
 	/**
-	 * Builds the wall spanned by two corners. The engine stands behind the wall, hidden;
-	 * the text is read from the other side.
+	 * Builds the wall spanned by two corners. The engine stands directly behind the wall, hidden,
+	 * sharing a full face with one wall block; the text is read from the other side.
 	 */
 	public static Result of(BlockPos a, BlockPos b, BlockPos engine) {
 		BlockPos min = BlockPos.min(a, b);
@@ -72,10 +71,27 @@ public record Wall(BlockPos min, BlockPos max, Direction facing) {
 		if (wall.width() > maxWidth || wall.height() > maxHeight) {
 			return Result.fail(Component.translatable("message.billboard.too_big", wall.width(), wall.height(), maxWidth, maxHeight));
 		}
-		if (wall.distanceSqr(engine) > MAX_ENGINE_DISTANCE * MAX_ENGINE_DISTANCE) {
-			return Result.fail(Component.translatable("message.billboard.too_far", MAX_ENGINE_DISTANCE));
+		if (!wall.isTouchedBy(engine)) {
+			return Result.fail(Component.translatable("message.billboard.not_attached"));
 		}
 		return Result.ok(wall);
+	}
+
+	/**
+	 * Loose check for the wand slot: the engine sits outside the box spanned by the corners and shares
+	 * a side face with one of its blocks. The exact rules (flat, behind, size) are checked at start.
+	 */
+	public static boolean isNextTo(BlockPos a, BlockPos b, BlockPos engine) {
+		BoundingBox box = BoundingBox.fromCorners(a, b);
+		if (box.isInside(engine)) {
+			return false;
+		}
+		for (Direction direction : Direction.Plane.HORIZONTAL) {
+			if (box.isInside(engine.relative(direction))) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public boolean alongX() {
@@ -103,10 +119,8 @@ public record Wall(BlockPos min, BlockPos max, Direction facing) {
 		return BoundingBox.fromCorners(min, max);
 	}
 
-	private double distanceSqr(BlockPos pos) {
-		int x = Math.clamp(pos.getX(), min.getX(), max.getX());
-		int y = Math.clamp(pos.getY(), min.getY(), max.getY());
-		int z = Math.clamp(pos.getZ(), min.getZ(), max.getZ());
-		return pos.distSqr(new BlockPos(x, y, z));
+	/** True if the engine shares a full face with a wall block, from behind. The engine then looks at the wall along the facing. */
+	public boolean isTouchedBy(BlockPos engine) {
+		return box().isInside(engine.relative(facing));
 	}
 }

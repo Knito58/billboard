@@ -6,10 +6,18 @@
 - The pixel slot is now a sample slot: clicking it with a block copies the block, you keep it.
   Blocks can also be dragged there from JEI or REI. Breaking the engine drops only the wand.
 - ComputerCraft: `setPixel("minecraft:gold_block")` and `getPixel()` choose the pixel block from Lua.
+- The engine must now touch its wall: place it directly behind one wall block, full face contact.
+  It no longer works from up to 16 blocks away, and it refuses a wand marked for a different wall or without both corners.
+  An engine that already shows text keeps running; the rule applies at its next start.
+- Engine screen messages also go to the chat; a message too long for the status line ends in "...".
+- The engine ignores redstone power from the side that touches the wall, so a redstone block pixel can't start it.
+- ComputerCraft: `go(column)` starts the text at a wall column, e.g. right-aligned with `go(width - textWidth)`;
+  `getWallSize()` returns the width and height of the marked wall.
+- New character `·` (middle dot): a single dot in the middle row. From Lua write it as `"\183"`.
 - Engines from older versions hand their real pixel blocks back (they pop out on top of the engine).
 - Pictures and animations from ComputerCraft: `drawImage(data)` shows a PNG, JPEG, GIF or BMP on the wall,
   every pixel as the block with the nearest color (about 260 vanilla blocks, all free). Animated GIFs play by themselves.
-  `drawPixels` draws pixels made by a Lua program; `getWallSize`, `isPainting`, `isShowingPicture`, `play`.
+  `drawPixels` draws pixels made by a Lua program; `isPainting`, `isShowingPicture`, `play`. `getWallSize()` also reports a shown wall.
 - Bigger walls: up to 256 wide and 384 high (the whole world height) by default, up to 512 wide with `config/billboard.properties`.
 - New picture blocks are spread over several ticks (`blocks_per_tick`), so big walls don't freeze the server.
 

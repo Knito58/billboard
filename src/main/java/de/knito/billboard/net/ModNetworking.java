@@ -32,7 +32,7 @@ public class ModNetworking {
 				case RESTORE -> engine.restore();
 			};
 			if (message != null) {
-				context.responseSender().sendPacket(new EngineStatusPayload(message));
+				BillboardEngineMenu.tell(context.player(), message);
 			}
 		});
 
