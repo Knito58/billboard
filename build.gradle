@@ -49,11 +49,9 @@ dependencies {
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
-	// CC: Tweaked is optional: compiled against, but not needed in the released jar.
+	// CC: Tweaked is optional: compiled against, but not needed at runtime.
 	compileOnly("cc.tweaked:cc-tweaked-${project.minecraft_version}-core-api:${project.cc_tweaked_version}") { transitive = false }
 	compileOnly("cc.tweaked:cc-tweaked-${project.minecraft_version}-fabric-api:${project.cc_tweaked_version}") { transitive = false }
-	// The full mod only for the dev client and server (IDEA run configs, runClient, runServer); the release jar still does not need it.
-	localRuntime("cc.tweaked:cc-tweaked-${project.minecraft_version}-fabric:${project.cc_tweaked_version}") { transitive = false }
 
 	// JEI and REI are optional too: drag a block from them onto the pixel slot.
 	// JEI also runs in the dev client, so this can be tried from IDEA.
