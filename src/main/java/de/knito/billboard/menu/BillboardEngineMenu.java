@@ -3,8 +3,10 @@ package de.knito.billboard.menu;
 import io.netty.buffer.ByteBuf;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -16,8 +18,11 @@ import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+
 import de.knito.billboard.ModMenus;
 import de.knito.billboard.block.BillboardEngineBlockEntity;
+import de.knito.billboard.net.EngineStatusPayload;
 
 public class BillboardEngineMenu extends AbstractContainerMenu {
 	/** Sent to the client when the screen opens. */
@@ -38,20 +43,21 @@ public class BillboardEngineMenu extends AbstractContainerMenu {
 	private final Container pixelSample;
 	private final ContainerData data;
 	private final String initialText;
+	private long lastWarning = -1;
 	/** Only set on the server. */
 	private final BillboardEngineBlockEntity engine;
 
 	/** Client side. */
 	public BillboardEngineMenu(int containerId, Inventory inventory, OpenData openData) {
-		this(containerId, inventory, new SimpleContainer(1), new SimpleContainer(1), new SimpleContainerData(4), null, openData.text());
+		this(containerId, inventory, new SimpleContainer(1), new SimpleContainer(1), new SimpleContainerData(4), null, openData.pos(), openData.text());
 	}
 
 	/** Server side. */
 	public BillboardEngineMenu(int containerId, Inventory inventory, Container container, Container pixelSample, ContainerData data, BillboardEngineBlockEntity engine) {
-		this(containerId, inventory, container, pixelSample, data, engine, "");
+		this(containerId, inventory, container, pixelSample, data, engine, engine.getBlockPos(), "");
 	}
 
-	private BillboardEngineMenu(int containerId, Inventory inventory, Container container, Container pixelSample, ContainerData data, BillboardEngineBlockEntity engine, String initialText) {
+	private BillboardEngineMenu(int containerId, Inventory inventory, Container container, Container pixelSample, ContainerData data, BillboardEngineBlockEntity engine, BlockPos enginePos, String initialText) {
 		super(ModMenus.BILLBOARD_ENGINE, containerId);
 		checkContainerSize(container, 1);
 		checkContainerSize(pixelSample, 1);
@@ -65,7 +71,20 @@ public class BillboardEngineMenu extends AbstractContainerMenu {
 		addSlot(new Slot(container, 0, WAND_X, SLOTS_Y) {
 			@Override
 			public boolean mayPlace(ItemStack stack) {
-				return BillboardEngineBlockEntity.isValidWand(stack);
+				if (!BillboardEngineBlockEntity.isValidWand(stack)) {
+					return false;
+				}
+				// An unmarked wand, or one for a wall this engine does not touch, stays with the player.
+				Component problem = BillboardEngineBlockEntity.wandProblem(stack, inventory.player.level(), enginePos);
+				if (problem == null) {
+					return true;
+				}
+				// One click can ask several times; tell the player once per tick.
+				if (inventory.player instanceof ServerPlayer serverPlayer && serverPlayer.level().getGameTime() != lastWarning) {
+					lastWarning = serverPlayer.level().getGameTime();
+					tell(serverPlayer, problem);
+				}
+				return false;
 			}
 
 			@Override
@@ -87,6 +106,12 @@ public class BillboardEngineMenu extends AbstractContainerMenu {
 		});
 		addStandardInventorySlots(inventory, 8, INVENTORY_Y);
 		addDataSlots(data);
+	}
+
+	/** Shows a message in the engine screen's status line and, since that line is short, in the chat too. */
+	public static void tell(ServerPlayer player, Component message) {
+		ServerPlayNetworking.send(player, new EngineStatusPayload(message));
+		player.sendSystemMessage(message);
 	}
 
 	public BillboardEngineBlockEntity engine() {

@@ -162,10 +162,13 @@ public class BillboardEngineScreen extends AbstractContainerScreen<BillboardEngi
 		graphics.text(font, state, imageWidth - 8 - font.width(state), titleLabelY, stateColor, false);
 
 		if (!status.getString().isEmpty()) {
-			var lines = font.split(status, imageWidth - 16);
-			if (!lines.isEmpty()) {
-				graphics.text(font, lines.getFirst(), 8, STATUS_Y, 0xFF802020, false);
+			// One line only; a longer message ends in "..." (full text in the tooltip and the chat).
+			String line = status.getString();
+			int width = imageWidth - 16;
+			if (font.width(line) > width) {
+				line = font.plainSubstrByWidth(line, width - font.width("...")).stripTrailing() + "...";
 			}
+			graphics.text(font, line, 8, STATUS_Y, 0xFF802020, false);
 		}
 	}
 
