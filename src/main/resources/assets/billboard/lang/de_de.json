@@ -63,5 +63,9 @@
 	"gui.billboard.script.sending": "Sende %s Datei(en)...",
 	"gui.billboard.script.files": "Dateien (eine .lua, bis %s Bilder)",
 	"gui.billboard.script.drop_hint": "Eine .lua-Datei und Bilder hierher ziehen.",
-	"gui.billboard.script.output": "Ausgabe"
+	"gui.billboard.script.output": "Ausgabe",
+	"gui.billboard.script.folder": "Ordner",
+	"gui.billboard.script.folder_tooltip": "Öffnet den Ordner dieser Box im Dateimanager. Nach Änderungen am Programm dort Neustart drücken.",
+	"gui.billboard.script.open_file": "Klicken öffnet die Datei mit dem passenden Programm. Nach dem Speichern Neustart drücken.",
+	"gui.billboard.script.opened": "Öffne %s..."
 }

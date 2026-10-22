@@ -8,10 +8,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
+import com.mojang.blaze3d.Blaze3D;
+
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
@@ -25,6 +29,7 @@ import de.knito.billboard.net.ScriptUploadPayload;
 /**
  * The Script Box screen: its files, its output lines, Restart and Stop. Files are dropped onto it from the
  * file manager: one .lua program and images. There is no editor; programs are written in any text editor.
+ * In single player the folder button and a click on a file open them on this computer.
  */
 public class ScriptBoxScreen extends AbstractContainerScreen<ScriptBoxMenu> {
 	private static final int WIDTH = 256;
@@ -57,6 +62,12 @@ public class ScriptBoxScreen extends AbstractContainerScreen<ScriptBoxMenu> {
 				.bounds(leftPos + 82, topPos + HEIGHT - 26, 70, 18).build());
 		restart.active = canEdit;
 		stop.active = canEdit;
+		Path folder = localFolder();
+		if (folder != null) {
+			Button open = addRenderableWidget(Button.builder(Component.translatable("gui.billboard.script.folder"), b -> Blaze3D.openPath(folder))
+					.bounds(leftPos + WIDTH - 66, topPos + FILES_Y - 3, 58, 12).build());
+			open.setTooltip(Tooltip.create(Component.translatable("gui.billboard.script.folder_tooltip")));
+		}
 		if (state != null && canEdit) {
 			List<ScriptBoxStatePayload.FileEntry> files = state.files();
 			for (int i = 0; i < Math.min(files.size(), MAX_FILE_ROWS); i++) {
@@ -68,9 +79,44 @@ public class ScriptBoxScreen extends AbstractContainerScreen<ScriptBoxMenu> {
 		}
 	}
 
+	/** The box's folder if it is on this computer (single player), else null. */
+	private Path localFolder() {
+		if (state == null || state.folder().isEmpty() || !Minecraft.getInstance().hasSingleplayerServer()) {
+			return null;
+		}
+		return Path.of(state.folder());
+	}
+
+	/** The file row under the mouse, or -1. */
+	private int fileRowAt(double mouseX, double mouseY) {
+		if (state == null || mouseX < leftPos + 8 || mouseX >= leftPos + WIDTH - 22) {
+			return -1;
+		}
+		double y = mouseY - topPos - FILES_Y - 12;
+		int row = y < 0 ? -1 : (int) (y / FILE_ROW);
+		return row >= 0 && row < Math.min(state.files().size(), MAX_FILE_ROWS) ? row : -1;
+	}
+
+	/** A click on a file opens it with the program the system uses for it, such as the text editor for .lua. */
+	@Override
+	public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+		Path folder = localFolder();
+		int row = fileRowAt(event.x(), event.y());
+		if (folder != null && row >= 0 && event.button() == 0) {
+			Path file = folder.resolve(state.files().get(row).name());
+			if (Files.isRegularFile(file)) {
+				Blaze3D.openPath(file);
+				note(Component.translatable("gui.billboard.script.opened", file.getFileName().toString()), false);
+			}
+			return true;
+		}
+		return super.mouseClicked(event, doubleClick);
+	}
+
 	/** New state from the server; the file buttons are rebuilt to match. */
 	public void setState(ScriptBoxStatePayload newState) {
-		boolean filesChanged = state == null || state.canEdit() != newState.canEdit() || !state.files().equals(newState.files());
+		boolean filesChanged = state == null || state.canEdit() != newState.canEdit() || !state.files().equals(newState.files())
+				|| !state.folder().equals(newState.folder());
 		state = newState;
 		note = Component.empty();
 		if (filesChanged) {
@@ -226,6 +272,9 @@ public class ScriptBoxScreen extends AbstractContainerScreen<ScriptBoxMenu> {
 					graphics.setTooltipForNextFrame(Component.literal(text), mouseX, mouseY);
 				}
 			}
+		}
+		if (localFolder() != null && fileRowAt(mouseX, mouseY) >= 0) {
+			graphics.setTooltipForNextFrame(Component.translatable("gui.billboard.script.open_file"), mouseX, mouseY);
 		}
 		if (!note.getString().isEmpty() && mouseX >= leftPos + 158 && mouseY >= topPos + HEIGHT - 22 && mouseY < topPos + HEIGHT - 12) {
 			graphics.setTooltipForNextFrame(note, mouseX, mouseY);

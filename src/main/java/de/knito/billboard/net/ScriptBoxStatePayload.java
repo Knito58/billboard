@@ -12,10 +12,11 @@ import de.knito.billboard.Billboard;
 
 /**
  * What the Script Box screen shows: state, files, output lines, whether this player may change the box,
- * and the server's upload limits. Sent when the screen opens and whenever something changes.
+ * and the server's upload limits. Sent when the screen opens and whenever something changes. folder is the box's
+ * folder on disk, only in single player (empty otherwise), so the screen can open it and its files.
  */
 public record ScriptBoxStatePayload(String status, boolean canEdit, List<FileEntry> files, List<Line> lines,
-		int maxLuaKb, int maxImages, int maxImageKb) implements CustomPacketPayload {
+		int maxLuaKb, int maxImages, int maxImageKb, String folder) implements CustomPacketPayload {
 	public record FileEntry(String name, int size) {
 		static final StreamCodec<ByteBuf, FileEntry> STREAM_CODEC = StreamCodec.composite(
 				ByteBufCodecs.stringUtf8(256), FileEntry::name,
@@ -42,6 +43,7 @@ public record ScriptBoxStatePayload(String status, boolean canEdit, List<FileEnt
 			ByteBufCodecs.VAR_INT, ScriptBoxStatePayload::maxLuaKb,
 			ByteBufCodecs.VAR_INT, ScriptBoxStatePayload::maxImages,
 			ByteBufCodecs.VAR_INT, ScriptBoxStatePayload::maxImageKb,
+			ByteBufCodecs.stringUtf8(4096), ScriptBoxStatePayload::folder,
 			ScriptBoxStatePayload::new
 	);
 

@@ -64,6 +64,8 @@ in the middle instead of the glass pane (4 iron, 4 redstone, 1 paper), and place
   A new `.lua` file replaces the old program, whatever its name, and starts it. An image replaces the image of
   the same name. The **x** behind a file removes it. There is no editor in the game: write the program in any text editor
   and drop it again after a change.
+- In single player the **Folder** button opens the box's folder in your file manager, and a click on a file opens it
+  with your system's program for it (your text editor for `.lua`). After saving a change there, press **Restart**.
 - Only the player who placed the box and operators may change it (with `scripts_ops_only=true` only operators).
   Others can look at the screen.
 - The files live in the world folder: `saves/<world>/billboard/scripts/<id>/`

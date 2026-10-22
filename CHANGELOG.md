@@ -8,6 +8,7 @@
   `/billboard script <pos> restart|stop|status`. Lua VM: Cobalt (MIT), packed into the mod.
 - Script Box screen: drag the `.lua` file and images from your file manager onto it. It lists the files (with a button
   to remove each), shows the last output lines and has Restart and Stop. Only the placer and operators may change a box.
+  In single player a Folder button opens the box's folder, and a click on a file opens it in your editor.
 - The engine screen greys out the text, speed, size and Go while a program holds the engine.
 - `show(text)` for Script Boxes and ComputerCraft: sets the text and shows it standing still at the left edge
   (setText, go and stop in one). The same text again is not redrawn, so a clock can simply call it every second.

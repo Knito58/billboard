@@ -63,5 +63,9 @@
 	"gui.billboard.script.sending": "Sending %s file(s)...",
 	"gui.billboard.script.files": "Files (one .lua, up to %s images)",
 	"gui.billboard.script.drop_hint": "Drop a .lua file and images here.",
-	"gui.billboard.script.output": "Output"
+	"gui.billboard.script.output": "Output",
+	"gui.billboard.script.folder": "Folder",
+	"gui.billboard.script.folder_tooltip": "Opens this box's folder in your file manager. After changing the program there, press Restart.",
+	"gui.billboard.script.open_file": "Click to open with your system's program for it. After saving, press Restart.",
+	"gui.billboard.script.opened": "Opening %s..."
 }

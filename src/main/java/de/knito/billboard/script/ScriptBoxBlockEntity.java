@@ -285,8 +285,10 @@ public class ScriptBoxBlockEntity extends BlockEntity implements ExtendedMenuPro
 
 	/** Everything the screen shows, for this player. */
 	public ScriptBoxStatePayload statePayload(ServerPlayer player) {
+		MinecraftServer server = player.level().getServer();
+		Path folder = folder(server);
 		List<ScriptBoxStatePayload.FileEntry> files = new ArrayList<>();
-		for (Path file : ScriptStorage.files(folder(player.level().getServer()))) {
+		for (Path file : ScriptStorage.files(folder)) {
 			long size;
 			try {
 				size = Files.size(file);
@@ -296,8 +298,19 @@ public class ScriptBoxBlockEntity extends BlockEntity implements ExtendedMenuPro
 			files.add(new ScriptBoxStatePayload.FileEntry(file.getFileName().toString(), (int) Math.min(Integer.MAX_VALUE, size)));
 		}
 		List<ScriptBoxStatePayload.Line> shown = lines.stream().map(line -> new ScriptBoxStatePayload.Line(line.text(), line.error())).toList();
-		return new ScriptBoxStatePayload(statusText(), canEdit(player), files, shown,
-				BillboardConfig.scriptMaxLuaKb(), BillboardConfig.scriptMaxImages(), BillboardConfig.scriptMaxImageKb());
+		boolean canEdit = canEdit(player);
+		// A server's paths mean nothing on the player's computer and are none of their business.
+		String localFolder = "";
+		if (canEdit && !server.isDedicatedServer()) {
+			try {
+				Files.createDirectories(folder); // so the Folder button has something to open
+				localFolder = folder.toString();
+			} catch (IOException e) {
+				// no button then
+			}
+		}
+		return new ScriptBoxStatePayload(statusText(), canEdit, files, shown,
+				BillboardConfig.scriptMaxLuaKb(), BillboardConfig.scriptMaxImages(), BillboardConfig.scriptMaxImageKb(), localFolder);
 	}
 
 	/**
