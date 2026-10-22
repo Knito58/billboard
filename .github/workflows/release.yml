@@ -25,6 +25,7 @@ jobs:
         run: |
           version=$(grep '^version=' gradle.properties | cut -d= -f2)
           echo "TAG=v$version" >> "$GITHUB_ENV"
+          echo "VERSION=$version" >> "$GITHUB_ENV"
           if [ "$GITHUB_REF_TYPE" = tag ] && [ "$GITHUB_REF_NAME" != "v$version" ]; then
             echo "Tag $GITHUB_REF_NAME does not match version=$version in gradle.properties"
             exit 1
@@ -35,7 +36,7 @@ jobs:
         with:
           tag_name: ${{ env.TAG }}
           target_commitish: ${{ github.sha }}
-          name: Billboard Engine ${{ env.TAG }} for Minecraft 26.3
+          name: Billboard Engine ${{ env.VERSION }} for Minecraft 26.3
           body_path: CHANGELOG.md
           files: |
             build/libs/billboard-*.jar
