@@ -1,6 +1,8 @@
 Use **redstone blocks** as pixels and the wall becomes a punch card for redstone behind it.
 Use **redstone lamps** as pixels and the text lights up from behind.
 
+![REDSTONE scrolling in redstone blocks along a long wall at night](images/punch-card.gif)
+
 ## Redstone blocks as pixels
 
 Put a redstone block into the pixel slot. As the text scrolls, every lit pixel is a redstone block, and it powers

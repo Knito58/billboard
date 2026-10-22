@@ -1,5 +1,7 @@
 The **Script Box** runs one Lua program that drives the engine it touches. No other mod is needed.
 
+![The Script Box screen: files, output and the Restart and Stop buttons](images/06-script-box.jpg)
+
 ## Setting it up
 
 1. Craft it: the engine recipe with **paper** in the middle instead of the glass pane (4 iron, 4 redstone, 1 paper).

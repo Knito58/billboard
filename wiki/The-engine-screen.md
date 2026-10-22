@@ -1,5 +1,7 @@
 Right-click the Billboard Engine to open its screen.
 
+![The engine screen with wand, pixel block, text, speed, size and the Go, Stop and Restore buttons](images/02-engine-screen.jpg)
+
 | Part | What it does |
 | --- | --- |
 | Left slot | The **Selector Wand** with both corners marked on the wall this engine touches. Other wands are refused. Breaking the engine drops it. |
