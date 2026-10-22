@@ -16,12 +16,19 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 
 import de.knito.billboard.block.BillboardEngineBlock;
+import de.knito.billboard.script.ScriptBoxBlock;
 
 public class ModBlocks {
 	public static final Block BILLBOARD_ENGINE = register(
 			"billboard_engine",
 			BillboardEngineBlock::new,
 			BlockBehaviour.Properties.of().strength(2.0f).requiresCorrectToolForDrops().sound(SoundType.METAL)
+	);
+
+	public static final Block SCRIPT_BOX = register(
+			"script_box",
+			ScriptBoxBlock::new,
+			BlockBehaviour.Properties.of().strength(1.0f).sound(SoundType.WOOD)
 	);
 
 	private static Block register(String name, Function<BlockBehaviour.Properties, Block> blockFactory, BlockBehaviour.Properties properties) {
@@ -37,6 +44,7 @@ public class ModBlocks {
 	public static void initialize() {
 		CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.FUNCTIONAL_BLOCKS).register((creativeTab) -> {
 			creativeTab.accept(BILLBOARD_ENGINE.asItem());
+			creativeTab.accept(SCRIPT_BOX.asItem());
 		});
 	}
 }

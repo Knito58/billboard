@@ -1,5 +1,6 @@
 {
 	"block.billboard.billboard_engine": "Billboard Engine",
+	"block.billboard.script_box": "Script Box",
 	"item.billboard.selector_wand": "Selector Wand",
 	"gui.billboard.text": "Text",
 	"gui.billboard.text_hint": "Type your text...",
@@ -41,6 +42,9 @@
 	"message.billboard.nothing_to_restore": "Nothing to restore.",
 	"message.billboard.running_off": "Running the text off the wall once.",
 	"message.billboard.no_engine": "No billboard engine at %s %s %s.",
+	"message.billboard.no_script_box": "No Script Box at %s %s %s.",
+	"message.billboard.script_status": "Script Box: %s",
+	"message.billboard.claimed": "The engine is controlled by %s. Only Stop and Restore work.",
 	"gui.billboard.state_running": "Running",
 	"gui.billboard.state_stopped": "Stopped",
 	"message.billboard.protected": "This block belongs to an active billboard. Press Restore on its engine first.",
