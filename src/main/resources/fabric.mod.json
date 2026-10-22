@@ -5,7 +5,8 @@
 	"name": "Billboard Engine",
 	"description": "Turns any flat wall into a scrolling text billboard made of blocks.",
 	"authors": [
-		"Knito58"
+		"Claude",
+		"Konitor"
 	],
 	"contact": {
 		"sources": "https://github.com/Knito58/billboard"
