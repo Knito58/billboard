@@ -35,8 +35,8 @@ Redstone blocks work as pixels: lamps or dust next to the wall follow the text, 
 The other way round works too: redstone lamps as pixels light up where levers or redstone blocks sit behind the wall.
 Blocks in the wall may still change their own state (a lamp lighting up), they just can't be replaced.
 Scrolling pauses while the wall's chunks are not loaded.
-Walls containing chests, signs or other block entities are refused. Maximum wall size is 256 x 256
-(a server can raise it up to 512 x 384, see [Settings](#settings)).
+Walls containing chests, signs or other block entities are refused. Maximum wall size is 256 wide and 384 high, the full height of the world
+(a server can allow up to 512 wide, see [Settings](#settings)).
 The original blocks are saved in the world (`data/billboard/wall_backups.dat`), so a crash does not lose them.
 
 ## Control by sign and redstone
@@ -125,7 +125,7 @@ and blocks from other mods are not used.
 
 ```
 max_width=256         # largest wall the wand may mark, up to 512
-max_height=256        # up to 384, the full height of the world
+max_height=384        # 384 is the full height of the world
 blocks_per_tick=8192  # picture blocks an engine may change per tick
 ```
 
@@ -156,3 +156,5 @@ on GitHub open *Actions → Release → Run workflow*. It builds the jar, tags `
 
 In IntelliJ IDEA: *File → Open* the project folder, wait for the Gradle import, then run the
 `Minecraft Client` run configuration.
+Only Fabric API is loaded with the mod in these runs. To test with CC: Tweaked, JEI or other mods,
+put their jar files into `run/mods`.

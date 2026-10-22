@@ -20,7 +20,7 @@ public final class BillboardConfig {
 	public static final int LIMIT_HEIGHT = 384;
 
 	private static int maxWidth = 256;
-	private static int maxHeight = 256;
+	private static int maxHeight = LIMIT_HEIGHT;
 	private static int blocksPerTick = 8192;
 
 	private BillboardConfig() {
