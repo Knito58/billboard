@@ -71,6 +71,18 @@ The `engine` table has the same functions as the ComputerCraft peripheral below,
 replacing `peripheral.find("billboard_engine")` with `engine`. Only `drawImage` takes the name of an image
 in the box's folder instead of the file's bytes:
 
+A clock in four lines:
+
+```lua
+engine.claim()
+while true do
+  engine.show(os.date("%H:%M"))      -- or textutils.formatTime(os.time(), true) for Minecraft time
+  sleep(1)
+end
+```
+
+More:
+
 ```lua
 engine.claim()                       -- this box alone controls the engine (see below)
 engine.setText("Hello")
@@ -116,6 +128,8 @@ b.setSpeed(7)          -- 1 to 10, takes effect at once
 b.setSize(3)           -- letter size 1 to 9, takes effect at once (also on a stopped text)
 b.setPixel("minecraft:gold_block")  -- any full block, no item needed; getPixel() reads it
 print(b.go())          -- true, or false plus a reason such as "need_wand", "need_pixel", "overlap"
+b.show("12:34")        -- setText, go and stop in one: the text stands still at the left edge;
+                       -- the same text again is not redrawn, so a clock can call it every second
 b.go(10)               -- same, but the text starts at wall column 10 (0 = left edge)
 local w, h = b.getWallSize()  -- size of the shown wall, else the one the wand marks; or nil plus a reason
 b.stop()               -- freeze the text

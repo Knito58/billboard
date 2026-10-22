@@ -153,6 +153,16 @@ public final class ComputerCraftCompat {
 			}
 		}
 
+		/** setText, go and stop in one: the text stands still at the left edge. Unchanged text is not redrawn. */
+		@LuaFunction(mainThread = true)
+		public final MethodResult show(IComputerAccess computer, String text) throws LuaException {
+			try {
+				return MethodResult.of(control(computer).show(text));
+			} catch (EngineControl.Failure e) {
+				throw new LuaException(e.getMessage());
+			}
+		}
+
 		@LuaFunction(mainThread = true)
 		public final MethodResult runOff(IComputerAccess computer) throws LuaException {
 			try {

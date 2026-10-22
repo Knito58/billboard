@@ -584,6 +584,19 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 		return text;
 	}
 
+	/** True if the wall already shows exactly this text standing still where go() puts it, in the current size and pixel block. */
+	public boolean showsStill(String newText) {
+		if (!(level instanceof ServerLevel serverLevel)) {
+			return false;
+		}
+		Wall shown = BackupData.get(serverLevel).wallOf(worldPosition);
+		ItemStack sample = pixelSample();
+		return shown != null && offset == BillboardPainter.startOffset(shown)
+				&& !running && !pictureShown && isShowing() && pixel != null
+				&& shownText.equals(cleanText(newText)) && shownSize == size
+				&& sample.getItem() instanceof BlockItem item && item.getBlock().defaultBlockState().equals(pixel);
+	}
+
 	public int speed() {
 		return speed;
 	}

@@ -113,6 +113,26 @@ public final class EngineControl {
 		return result(column != null ? engine.goAt(column) : engine.go(), "started");
 	}
 
+	/**
+	 * Sets the text and shows it standing still at the left edge, like setText, go and stop together.
+	 * A text that already stands on the wall is left alone, so a clock can call it every second.
+	 */
+	public Object[] show(String text) throws Failure {
+		checkClaim();
+		if (text.length() > BillboardEngineBlockEntity.MAX_TEXT_LENGTH) {
+			throw new Failure("Text is longer than " + BillboardEngineBlockEntity.MAX_TEXT_LENGTH + " characters");
+		}
+		engine.applySettings(text, engine.speed(), engine.size());
+		if (engine.showsStill(text)) {
+			return new Object[]{true};
+		}
+		Object[] result = result(engine.go(), "started");
+		if (Boolean.TRUE.equals(result[0])) {
+			engine.stop();
+		}
+		return result;
+	}
+
 	/** Lets the text run off the wall once, then restores the wall. Starts from the right edge if nothing is shown. */
 	public Object[] runOff() throws Failure {
 		checkClaim();

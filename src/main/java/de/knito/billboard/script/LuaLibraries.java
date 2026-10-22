@@ -197,6 +197,7 @@ final class LuaLibraries {
 				engineFunction("isRunning", (c, a) -> c.isRunning()),
 				engineFunction("isShowing", (c, a) -> c.isShowing()),
 				engineFunction("go", (c, a) -> c.go(a.arg(1).isNil() ? null : a.arg(1).checkInteger())),
+				engineFunction("show", (c, a) -> c.show(a.arg(1).checkString())),
 				engineFunction("runOff", (c, a) -> c.runOff()),
 				engineFunction("isRunningOff", (c, a) -> c.isRunningOff()),
 				engineFunction("stop", (c, a) -> c.stop()),
