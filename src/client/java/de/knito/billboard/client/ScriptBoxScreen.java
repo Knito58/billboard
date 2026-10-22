@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Locale;
 
 import com.mojang.blaze3d.Blaze3D;
+import com.mojang.blaze3d.platform.InputConstants;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -33,11 +34,11 @@ import de.knito.billboard.net.ScriptUploadPayload;
  */
 public class ScriptBoxScreen extends AbstractContainerScreen<ScriptBoxMenu> {
 	private static final int WIDTH = 256;
-	private static final int HEIGHT = 216;
-	private static final int FILES_Y = 20;
+	private static final int HEIGHT = 222;
+	private static final int FILES_Y = 18;
 	private static final int FILE_ROW = 11;
-	private static final int MAX_FILE_ROWS = 9;
-	private static final int OUTPUT_Y = 124;
+	private static final int MAX_FILE_ROWS = 7;
+	private static final int OUTPUT_Y = 112;
 	private static final int OUTPUT_LINES = 7;
 	private static final int PANEL = 0xFFC6C6C6;
 	private static final int DARK = 0xFF555555;
@@ -57,9 +58,9 @@ public class ScriptBoxScreen extends AbstractContainerScreen<ScriptBoxMenu> {
 		super.init();
 		boolean canEdit = state != null && state.canEdit();
 		Button restart = addRenderableWidget(Button.builder(Component.translatable("gui.billboard.script.restart"), b -> send(ScriptBoxActionPayload.Action.RESTART, ""))
-				.bounds(leftPos + 8, topPos + HEIGHT - 26, 70, 18).build());
+				.bounds(leftPos + 8, topPos + HEIGHT - 22, 70, 18).build());
 		Button stop = addRenderableWidget(Button.builder(Component.translatable("gui.billboard.stop"), b -> send(ScriptBoxActionPayload.Action.STOP, ""))
-				.bounds(leftPos + 82, topPos + HEIGHT - 26, 70, 18).build());
+				.bounds(leftPos + 82, topPos + HEIGHT - 22, 70, 18).build());
 		restart.active = canEdit;
 		stop.active = canEdit;
 		Path folder = localFolder();
@@ -102,7 +103,7 @@ public class ScriptBoxScreen extends AbstractContainerScreen<ScriptBoxMenu> {
 	public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
 		Path folder = localFolder();
 		int row = fileRowAt(event.x(), event.y());
-		if (folder != null && row >= 0 && event.button() == 0) {
+		if (folder != null && row >= 0 && event.button() == InputConstants.MOUSE_BUTTON_LEFT) {
 			Path file = folder.resolve(state.files().get(row).name());
 			if (Files.isRegularFile(file)) {
 				Blaze3D.openPath(file);
@@ -223,7 +224,8 @@ public class ScriptBoxScreen extends AbstractContainerScreen<ScriptBoxMenu> {
 		};
 		graphics.text(font, state.status(), WIDTH - 8 - font.width(state.status()), 6, statusColor, false);
 
-		graphics.text(font, Component.translatable("gui.billboard.script.files", state.maxImages()), 8, FILES_Y, LABEL, false);
+		String filesLabel = Component.translatable("gui.billboard.script.files", state.maxImages()).getString();
+		graphics.text(font, fit(filesLabel, localFolder() != null ? WIDTH - 78 : WIDTH - 16), 8, FILES_Y, LABEL, false);
 		List<ScriptBoxStatePayload.FileEntry> files = state.files();
 		if (files.isEmpty()) {
 			graphics.text(font, Component.translatable("gui.billboard.script.drop_hint"), 12, FILES_Y + 13, 0xFF707070, false);
@@ -246,7 +248,7 @@ public class ScriptBoxScreen extends AbstractContainerScreen<ScriptBoxMenu> {
 		}
 
 		if (!note.getString().isEmpty()) {
-			graphics.text(font, fit(note.getString(), WIDTH - 164), 158, HEIGHT - 21, noteError ? 0xFFA02020 : 0xFF207020, false);
+			graphics.text(font, fit(note.getString(), WIDTH - 164), 158, HEIGHT - 17, noteError ? 0xFFA02020 : 0xFF207020, false);
 		}
 	}
 
@@ -276,7 +278,7 @@ public class ScriptBoxScreen extends AbstractContainerScreen<ScriptBoxMenu> {
 		if (localFolder() != null && fileRowAt(mouseX, mouseY) >= 0) {
 			graphics.setTooltipForNextFrame(Component.translatable("gui.billboard.script.open_file"), mouseX, mouseY);
 		}
-		if (!note.getString().isEmpty() && mouseX >= leftPos + 158 && mouseY >= topPos + HEIGHT - 22 && mouseY < topPos + HEIGHT - 12) {
+		if (!note.getString().isEmpty() && mouseX >= leftPos + 158 && mouseY >= topPos + HEIGHT - 18 && mouseY < topPos + HEIGHT - 8) {
 			graphics.setTooltipForNextFrame(note, mouseX, mouseY);
 		}
 	}
