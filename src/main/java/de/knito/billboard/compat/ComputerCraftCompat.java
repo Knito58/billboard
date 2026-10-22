@@ -1,5 +1,7 @@
 package de.knito.billboard.compat;
 
+import java.util.Optional;
+
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
@@ -15,6 +17,7 @@ import dan200.computercraft.api.peripheral.PeripheralLookup;
 import de.knito.billboard.ModBlockEntities;
 import de.knito.billboard.block.BillboardEngineBlockEntity;
 import de.knito.billboard.wall.BillboardFont;
+import de.knito.billboard.wall.Wall;
 
 /** Makes the engine a CC: Tweaked peripheral. Only loaded when CC: Tweaked is installed. */
 public final class ComputerCraftCompat {
@@ -119,9 +122,17 @@ public final class ComputerCraftCompat {
 			return engine.isShowingText();
 		}
 
+		/** Draws the text at the left edge, or with a column number starting at that column (0 = left edge). */
 		@LuaFunction(mainThread = true)
-		public final MethodResult go() {
-			return result(engine.go(), "started");
+		public final MethodResult go(Optional<Integer> column) {
+			return result(column.isPresent() ? engine.goAt(column.get()) : engine.go(), "started");
+		}
+
+		/** Width and height of the wall the wand marks, or nil plus a reason such as "need_wand". */
+		@LuaFunction(mainThread = true)
+		public final MethodResult getWallSize() {
+			Wall.Result wall = engine.wandWall();
+			return wall.isOk() ? MethodResult.of(wall.wall().width(), wall.wall().height()) : MethodResult.of(null, reason(wall.error()));
 		}
 
 		/** Lets the text run off the wall once, then restores the wall. Starts from the right edge if nothing is shown. */
@@ -148,10 +159,14 @@ public final class ComputerCraftCompat {
 
 		/** Lua style: true on success, otherwise false plus a short reason such as "need_wand" or "overlap". */
 		private static MethodResult result(Component message, String success) {
-			String reason = message.getContents() instanceof TranslatableContents translatable
+			String reason = reason(message);
+			return reason.equals(success) ? MethodResult.of(true) : MethodResult.of(false, reason);
+		}
+
+		private static String reason(Component message) {
+			return message.getContents() instanceof TranslatableContents translatable
 					? translatable.getKey().replace("message.billboard.", "")
 					: message.getString();
-			return reason.equals(success) ? MethodResult.of(true) : MethodResult.of(false, reason);
 		}
 	}
 }

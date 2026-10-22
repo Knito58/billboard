@@ -11,6 +11,9 @@
   An engine that already shows text keeps running; the rule applies at its next start.
 - Engine screen messages also go to the chat; a message too long for the status line ends in "...".
 - The engine ignores redstone power from the side that touches the wall, so a redstone block pixel can't start it.
+- ComputerCraft: `go(column)` starts the text at a wall column, e.g. right-aligned with `go(width - textWidth)`;
+  `getWallSize()` returns the width and height of the marked wall.
+- New character `·` (middle dot): a single dot in the middle row. From Lua write it as `"\183"`.
 - Engines from older versions hand their real pixel blocks back (they pop out on top of the engine).
 
 ## Billboard Engine 1.0.1 for Minecraft 26.3 (Fabric)

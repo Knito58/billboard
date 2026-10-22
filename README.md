@@ -61,6 +61,8 @@ b.setSpeed(7)          -- 1 to 10, takes effect at once
 b.setSize(3)           -- letter size 1 to 9, takes effect at once (also on a stopped text)
 b.setPixel("minecraft:gold_block")  -- any full block, no item needed; getPixel() reads it
 print(b.go())          -- true, or false plus a reason such as "need_wand", "need_pixel", "overlap"
+b.go(10)               -- same, but the text starts at wall column 10 (0 = left edge)
+local w, h = b.getWallSize()  -- size of the wall the wand marks, or nil plus a reason
 b.stop()               -- freeze the text
 b.restore()            -- put the wall back
 b.runOff()             -- let the text run off the wall once, then put the wall back
