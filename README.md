@@ -1,7 +1,10 @@
 # Billboard Engine
 
 Fabric mod for Minecraft: turns any flat wall into a scrolling text billboard made of blocks,
-or, with ComputerCraft, into a picture or animation made of blocks.
+or into a picture or animation made of blocks.
+
+**Manual: [the wiki](https://github.com/Knito58/billboard/wiki)** (recipes, every function, examples, FAQ).
+The wiki pages live in the `wiki/` folder and are copied to the Wiki tab on every merge.
 
 ## Install
 
