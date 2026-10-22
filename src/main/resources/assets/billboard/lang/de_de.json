@@ -52,5 +52,20 @@
 	"tooltip.billboard.engine.1": "Hinter eine mit dem Markierstab markierte Wand setzen.",
 	"tooltip.billboard.engine.2": "Schild an der Steuerung + Redstone-Impuls: zeigt das Schild.",
 	"tooltip.billboard.engine.3": "Folgt im Betrieb Änderungen an diesem Schild.",
-	"tooltip.billboard.engine.4": "ComputerCraft: Peripherie \"billboard_engine\"."
+	"tooltip.billboard.engine.4": "ComputerCraft: Peripherie \"billboard_engine\".",
+	"gui.billboard.state_claimed": "Belegt",
+	"gui.billboard.script.restart": "Neustart",
+	"gui.billboard.script.remove": "%s entfernen",
+	"gui.billboard.script.not_yours": "Nur der Besitzer oder ein OP darf diese Box ändern.",
+	"gui.billboard.script.one_program": "Nur eine .lua-Datei auf einmal.",
+	"gui.billboard.script.not_sent": "Nicht gesendet: %s",
+	"gui.billboard.script.ignored": "Ignoriert: %s",
+	"gui.billboard.script.sending": "Sende %s Datei(en)...",
+	"gui.billboard.script.files": "Dateien (eine .lua, bis %s Bilder)",
+	"gui.billboard.script.drop_hint": "Eine .lua-Datei und Bilder hierher ziehen.",
+	"gui.billboard.script.output": "Ausgabe",
+	"gui.billboard.script.folder": "Ordner",
+	"gui.billboard.script.folder_tooltip": "Öffnet den Ordner dieser Box im Dateimanager. Nach Änderungen am Programm dort Neustart drücken.",
+	"gui.billboard.script.open_file": "Klicken öffnet die Datei mit dem passenden Programm. Nach dem Speichern Neustart drücken.",
+	"gui.billboard.script.opened": "Öffne %s..."
 }

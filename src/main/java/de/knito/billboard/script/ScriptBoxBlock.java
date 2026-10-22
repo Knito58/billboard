@@ -1,12 +1,8 @@
 package de.knito.billboard.script;
 
-import java.util.List;
-
 import org.jspecify.annotations.Nullable;
 
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -27,8 +23,6 @@ import de.knito.billboard.ModBlockEntities;
 /** Runs one Lua program that drives the Billboard engine it touches. */
 public class ScriptBoxBlock extends BaseEntityBlock {
 	public static final EnumProperty<ScriptState> STATE = EnumProperty.create("state", ScriptState.class);
-	/** Output lines shown in chat on right-click. */
-	private static final int CHAT_LINES = 6;
 
 	public ScriptBoxBlock(Properties properties) {
 		super(properties);
@@ -48,15 +42,10 @@ public class ScriptBoxBlock extends BaseEntityBlock {
 		}
 	}
 
-	/** For now the box reports its state and last output lines in chat. */
 	@Override
 	protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
 		if (!level.isClientSide() && level.getBlockEntity(pos) instanceof ScriptBoxBlockEntity box) {
-			player.sendSystemMessage(Component.translatable("message.billboard.script_status", box.statusText()).withStyle(ChatFormatting.GOLD));
-			List<ScriptBoxBlockEntity.Line> lines = box.lines();
-			for (ScriptBoxBlockEntity.Line line : lines.subList(Math.max(0, lines.size() - CHAT_LINES), lines.size())) {
-				player.sendSystemMessage(Component.literal(line.text()).withStyle(line.error() ? ChatFormatting.RED : ChatFormatting.GRAY));
-			}
+			player.openMenu(box);
 		}
 		return InteractionResult.SUCCESS;
 	}

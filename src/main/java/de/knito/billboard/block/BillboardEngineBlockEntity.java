@@ -106,7 +106,7 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 	/** The Script Box or CC computer that claimed the engine; not saved, programs claim again after a restart. */
 	private EngineController controller;
 
-	/** Synced to the open screen: 0 = speed, 1 = 1 while the wall shows text, 2 = 1 while running, 3 = letter size. */
+	/** Synced to the open screen: 0 = speed, 1 = 1 while the wall shows text, 2 = 1 while running, 3 = letter size, 4 = 1 while claimed. */
 	private final ContainerData data = new ContainerData() {
 		@Override
 		public int get(int index) {
@@ -115,6 +115,7 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 				case 1 -> isShowing() ? 1 : 0;
 				case 2 -> isRunning() ? 1 : 0;
 				case 3 -> size;
+				case 4 -> controller() != null ? 1 : 0;
 				default -> 0;
 			};
 		}
@@ -125,7 +126,7 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 
 		@Override
 		public int getCount() {
-			return 4;
+			return 5;
 		}
 	};
 
