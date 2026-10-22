@@ -76,6 +76,13 @@ def bottom():
     edges(p)
     for x in range(1, 15):
         p[x, 7] = FOLD_D; p[x, 8] = FOLD_L
+    # Crash-lock bottom: the flaps were glued to fold flat, which leaves diagonal creases from the corners.
+    for i in range(1, 6):
+        for (x, y) in [(i, i), (15 - i, i), (i, 15 - i), (15 - i, 15 - i)]:
+            p[x, y] = FOLD
+    for i in range(2, 6):
+        for (x, y) in [(i - 1, i), (16 - i, i), (i - 1, 15 - i), (16 - i, 15 - i)]:
+            p[x, y] = FOLD_L
     return im
 
 side("dark").save(out + "/script_box_side.png")

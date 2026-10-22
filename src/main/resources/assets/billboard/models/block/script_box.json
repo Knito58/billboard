@@ -1,1 +1,1 @@
-{"parent":"minecraft:block/cube_all","textures":{"all":"billboard:block/script_box"}}
+{"parent":"minecraft:block/cube_bottom_top","textures":{"side":"billboard:block/script_box_side","top":"billboard:block/script_box_top","bottom":"billboard:block/script_box_bottom"}}
