@@ -1,5 +1,15 @@
 ## Next version (not released yet)
 
+- New block: **Script Box**. It runs one Lua program that drives the engine it touches, no other mod needed.
+  Program and images live in `<world>/billboard/scripts/<id>/`; the program starts with the world and runs while its chunk is loaded.
+  The `engine` table has the same functions as the ComputerCraft peripheral (`drawImage` takes an image name), plus
+  `sleep`, `print`, `os.time`/`os.date`/`os.clock`/`os.epoch`/`os.day` and `textutils.formatTime`.
+  Recipe: the engine recipe with paper instead of the glass pane. Breaking it drops it blank and deletes its files.
+  `/billboard script <pos> restart|stop|status`. Lua VM: Cobalt (MIT), packed into the mod.
+- Engines can be claimed: `claim()`, `release()`, `isClaimed()` for Script Boxes and ComputerCraft. A claimed engine takes
+  changes only from its holder and ignores sign and redstone; its screen keeps Stop and Restore as an emergency brake.
+- New settings for Script Boxes in `config/billboard.properties` (time per tick, limits, ops only, switch off).
+
 - Letter size 1 to 9: every dot of the 5x7 font becomes n x n blocks, up to 45 x 63 blocks per letter.
   Set it with **Size - / +** in the engine (new row under Speed) or `setSize(n)` / `getSize()` from ComputerCraft.
   A size change redraws a running or stopped text at once.

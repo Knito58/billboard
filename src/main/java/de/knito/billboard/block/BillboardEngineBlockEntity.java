@@ -103,6 +103,8 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 	private boolean pictureShown;
 	/** Paints and plays the picture; not saved, the wall keeps its last picture after a restart. */
 	private PicturePlayer picture;
+	/** The Script Box or CC computer that claimed the engine; not saved, programs claim again after a restart. */
+	private EngineController controller;
 
 	/** Synced to the open screen: 0 = speed, 1 = 1 while the wall shows text, 2 = 1 while running, 3 = letter size. */
 	private final ContainerData data = new ContainerData() {
@@ -448,7 +450,8 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 		}
 		powered = newPowered;
 		setChanged();
-		if (!powered) {
+		// A claimed engine listens only to its program.
+		if (!powered || controller() != null) {
 			return;
 		}
 		String sign = readSign();
@@ -466,6 +469,9 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 
 	/** While running, a changed sign (edited by a player or a Create Display Link) restarts the billboard with the new text. */
 	private void followSign() {
+		if (controller() != null) {
+			return;
+		}
 		String sign = readSign();
 		if (sign == null || sign.equals(signText)) {
 			return;
@@ -597,6 +603,33 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 
 	public boolean isRunningOff() {
 		return running && once;
+	}
+
+	/** Who holds the engine now, or null. A claim whose program has ended is dropped here. */
+	public EngineController controller() {
+		if (controller != null && !controller.isActive()) {
+			controller = null;
+		}
+		return controller;
+	}
+
+	/** Gives the engine to this controller alone. False if another one holds it. */
+	public boolean claim(EngineController claimant) {
+		EngineController holder = controller();
+		if (holder != null && !holder.equals(claimant)) {
+			return false;
+		}
+		controller = claimant;
+		return true;
+	}
+
+	/** Frees the engine if this controller holds it. */
+	public boolean release(EngineController claimant) {
+		if (controller != null && controller.equals(claimant)) {
+			controller = null;
+			return true;
+		}
+		return false;
 	}
 
 	public ItemStack pixelSample() {

@@ -1,5 +1,6 @@
 {
 	"block.billboard.billboard_engine": "Billboard-Steuerung",
+	"block.billboard.script_box": "Skript-Box",
 	"item.billboard.selector_wand": "Markierstab",
 	"gui.billboard.text": "Text",
 	"gui.billboard.text_hint": "Text eingeben...",
@@ -41,6 +42,9 @@
 	"message.billboard.nothing_to_restore": "Nichts wiederherzustellen.",
 	"message.billboard.running_off": "Der Text läuft einmal von der Wand.",
 	"message.billboard.no_engine": "Keine Billboard-Steuerung bei %s %s %s.",
+	"message.billboard.no_script_box": "Keine Skript-Box bei %s %s %s.",
+	"message.billboard.script_status": "Skript-Box: %s",
+	"message.billboard.claimed": "Die Steuerung wird von %s gelenkt. Nur Stopp und Zurück gehen.",
 	"gui.billboard.state_running": "Läuft",
 	"gui.billboard.state_stopped": "Angehalten",
 	"message.billboard.protected": "Dieser Block gehört zu einem aktiven Billboard. Erst an der Steuerung Zurück drücken.",

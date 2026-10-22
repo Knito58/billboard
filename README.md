@@ -51,6 +51,59 @@ That also works with Create's Display Link, which can write into vanilla signs.
 A pulse while the same text is already running changes nothing. Speed, size, Stop and Restore stay in the GUI.
 Wax the sign with a honeycomb so nobody can edit it by accident; the engine still reads it.
 
+## Script Box (Lua, no other mod needed)
+
+The Script Box runs one Lua program that drives the engine it touches. Craft it like the engine, with paper
+in the middle instead of the glass pane (4 iron, 4 redstone, 1 paper), and place it against the engine.
+
+- One box = one program. It starts when the world (or its chunk) loads and runs while the chunk is loaded.
+  It does not remember anything between runs; it starts again from the top.
+- The program and its images live in the world folder: `saves/<world>/billboard/scripts/<id>/`
+  (on a server `world/billboard/scripts/<id>/`): exactly one `.lua` file plus images (PNG, JPEG, GIF, BMP).
+  Edit them with any text editor. `/billboard script <x y z> status` shows the folder of a box.
+  *(Dragging files onto the box's screen comes with the next update.)*
+- Right-click the box to see its state and the last output lines in chat.
+  `/billboard script <x y z> restart` starts the program again, `stop` is the hand brake (it stays off,
+  also after a restart of the world, until `restart`).
+- Breaking the box drops it blank and deletes its folder. Keep your originals on your own disk.
+
+The `engine` table has the same functions as the ComputerCraft peripheral below, so a CC script runs after
+replacing `peripheral.find("billboard_engine")` with `engine`. Only `drawImage` takes the name of an image
+in the box's folder instead of the file's bytes:
+
+```lua
+engine.claim()                       -- this box alone controls the engine (see below)
+engine.setText("Hello")
+print(engine.go())                   -- print goes to the box's output lines
+sleep(1)                             -- seconds; every program must sleep now and then
+engine.drawImage("mona.png", { fit = "fill" })
+print(os.date("%H:%M"), textutils.formatTime(os.time(), true))
+```
+
+Besides `engine` a program has standard Lua (`string`, `table`, `math`, `utf8`, `coroutine`), `sleep`, `print`,
+`os.time`, `os.date`, `os.clock`, `os.day`, `os.epoch` and `textutils.formatTime` as in CC: Tweaked.
+No files, no internet, no peripherals.
+
+Limits: each box gets 2 ms of Lua time per tick and then pauses until the next tick. A program that runs
+5 seconds without `sleep()`, or uses its whole time for 30 seconds without ever sleeping longer than one tick,
+is stopped with a message. Program files up to 64 KB, up to 8 images of up to 2 MB each. All of this can be
+changed in [Settings](#settings).
+
+### Sharing an engine: claim and release
+
+Several Script Boxes and CC computers may touch the same engine. `engine.claim()` gives it to one of them:
+it returns `true`, or `false` plus who holds it (it never waits). While an engine is claimed, only its holder
+may change it; everyone may still read it (`getText`, `isRunning`, ...). The claim ends with `engine.release()`,
+or by itself when the program ends, fails, is restarted or stopped, its box is broken or unloaded, or the
+computer shuts down. A claimed engine ignores its sign and redstone; in its screen only Stop and Restore work,
+as an emergency brake. An engine nobody claims works as before.
+
+```lua
+while not engine.claim() do sleep(1) end   -- wait for our turn
+-- ... show something ...
+engine.release()                           -- let the next box have it
+```
+
 ## Control by ComputerCraft
 
 With [CC: Tweaked](https://modrinth.com/mod/cc-tweaked) installed, the engine is a peripheral of type `billboard_engine`
@@ -69,6 +122,7 @@ b.stop()               -- freeze the text
 b.restore()            -- put the wall back
 b.runOff()             -- let the text run off the wall once, then put the wall back
 b.getText(), b.getSpeed(), b.getSize(), b.isRunning(), b.isShowing(), b.isRunningOff()
+b.claim()  b.release()  b.isClaimed()   -- see "Sharing an engine" above
 ```
 
 `runOff()` lets a shown text (running or stopped) scroll on until it has left the wall, then restores the wall.
@@ -132,7 +186,18 @@ and blocks from other mods are not used.
 max_width=256         # largest wall the wand may mark, up to 512
 max_height=384        # 384 is the full height of the world
 blocks_per_tick=8192  # picture blocks an engine may change per tick
+
+scripts_enabled=true          # Script Boxes allowed at all
+scripts_ops_only=false        # only operators may give boxes files, restart or stop them
+script_ms_per_tick=2          # Lua time per box and tick
+script_max_busy_seconds=5     # stopped after this long without sleep()
+script_too_busy_seconds=30    # stopped after using its whole time this long
+script_max_lua_kb=64
+script_max_images=8
+script_max_image_kb=2048
 ```
+
+An older `billboard.properties` gets the new lines added at the next start; your values stay.
 
 To see a 512 wide wall as a whole you stand about 350 blocks away, which needs a render distance of about 22 chunks.
 Lower `blocks_per_tick` if pictures make the server lag.
@@ -140,11 +205,14 @@ Lower `blocks_per_tick` if pictures make the server lag.
 ## Command
 
 `/billboard runoff <x y z>` does the same as `runOff()` for the engine at that position.
-It needs operator rights (level 2), so it also works in a command block.
+`/billboard script <x y z> restart|stop|status` controls a Script Box; `status` also lists its folder and output lines.
+They need operator rights (level 2), so they also work in a command block.
 
 ## How this mod is made
 
 Billboard Engine is written by Claude AI (Anthropic), code, textures and icon included.
+The Script Box runs Lua with [Cobalt](https://github.com/cc-tweaked/Cobalt), CC: Tweaked's Lua VM (MIT license),
+packed into the mod; see `THIRD_PARTY_NOTICES.md`.
 Knito58 decides what the mod does and tests every version in game.
 
 ## Build and run (Linux)
