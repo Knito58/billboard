@@ -233,7 +233,7 @@ They need operator rights (level 2), so they also work in a command block.
 Billboard Engine is written by Claude AI (Anthropic), code, textures and icon included.
 The Script Box runs Lua with [Cobalt](https://github.com/cc-tweaked/Cobalt), CC: Tweaked's Lua VM (MIT license),
 packed into the mod; see `THIRD_PARTY_NOTICES.md`.
-Knito58 decides what the mod does and tests every version in game.
+Konitor decides what the mod does and tests every version in game.
 
 ## Build and run (Linux)
 

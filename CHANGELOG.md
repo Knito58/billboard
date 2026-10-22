@@ -1,5 +1,6 @@
 ## Next version (not released yet)
 
+- Authors are now "Claude, Konitor" (shown in Mod Menu); Konitor is the CurseForge name of the GitHub account Knito58.
 - New block: **Script Box**. It runs one Lua program that drives the engine it touches, no other mod needed.
   Program and images live in `<world>/billboard/scripts/<id>/`; the program starts with the world and runs while its chunk is loaded.
   The `engine` table has the same functions as the ComputerCraft peripheral (`drawImage` takes an image name), plus
