@@ -24,7 +24,7 @@
 	"message.billboard.not_flat": "Die Wand ist %s x %s x %s Blöcke groß. Sie muss flach sein, 1 Block dick.",
 	"message.billboard.engine_in_plane": "Die Steuerung muss hinter der Wand stehen, nicht seitlich in derselben Linie.",
 	"message.billboard.too_big": "Die Wand ist %s x %s. Maximal %s breit und %s hoch.",
-	"message.billboard.not_attached": "Die Steuerung muss die Rückseite der Wand mit einer ganzen Fläche berühren. Dieser Markierstab ist für eine andere Wand markiert.",
+	"message.billboard.not_attached": "Steuerung muss Wand berühren.",
 	"message.billboard.need_wand": "Leg einen Markierstab mit zwei markierten Ecken in das linke Feld.",
 	"message.billboard.need_pixel": "Wähle einen Pixelblock: klick das rechte Feld mit einem vollen Block an.",
 	"message.billboard.need_text": "Erst einen Text eingeben.",
