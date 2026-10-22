@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Locale;
 
 import com.mojang.blaze3d.Blaze3D;
+import com.mojang.blaze3d.platform.InputConstants;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -102,7 +103,7 @@ public class ScriptBoxScreen extends AbstractContainerScreen<ScriptBoxMenu> {
 	public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
 		Path folder = localFolder();
 		int row = fileRowAt(event.x(), event.y());
-		if (folder != null && row >= 0 && event.button() == 0) {
+		if (folder != null && row >= 0 && event.button() == InputConstants.MOUSE_BUTTON_LEFT) {
 			Path file = folder.resolve(state.files().get(row).name());
 			if (Files.isRegularFile(file)) {
 				Blaze3D.openPath(file);
