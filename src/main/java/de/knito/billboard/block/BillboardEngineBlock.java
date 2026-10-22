@@ -33,7 +33,7 @@ public class BillboardEngineBlock extends BaseEntityBlock {
 	@Override
 	protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, @Nullable Orientation orientation, boolean movedByPiston) {
 		if (!level.isClientSide() && level.getBlockEntity(pos) instanceof BillboardEngineBlockEntity engine) {
-			engine.setPowered(level.hasNeighborSignal(pos));
+			engine.setPowered(engine.hasSignal());
 		}
 	}
 

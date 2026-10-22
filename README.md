@@ -14,8 +14,10 @@ On a server, install it on the server and on every client. [CC: Tweaked](https:/
    (iron / redstone / iron, redstone / glass pane / redstone, iron / redstone / iron).
 2. Right-click one corner of a flat wall with the wand, then the opposite corner.
    While you hold the wand, the action bar shows the size. Sneak + right-click clears the corners.
-3. Place the engine behind the wall, at most 16 blocks away. The text is read from the other side,
-   so the engine stays hidden and can sit safely inside a building.
+3. Place the engine directly behind the wall, touching the back of one wall block with a full face
+   (not diagonally). The text is read from the other side, so the engine stays hidden and can sit
+   safely inside a building. The engine only accepts a wand with both corners marked on the wall it touches, and it
+   checks again at every start.
 4. Open the engine and put the wand in the left slot. Then click the right slot with a full block
    (e.g. gold block), or drag one there from [JEI](https://modrinth.com/mod/jei) or
    [REI](https://modrinth.com/mod/rei). The slot only keeps a faded copy as a setting: the block stays
@@ -40,7 +42,8 @@ The original blocks are saved in the world (`data/billboard/wall_backups.dat`), 
 ## Control by sign and redstone
 
 No other mod needed. Put a sign on the engine (any side, or on top) and give the engine a redstone pulse
-(button, lever, observer...). The engine reads the sign, joins its lines with spaces and presses **Go**.
+(button, lever, observer...) from any side except the one touching the wall, so redstone pixels can't trigger it.
+The engine reads the sign, joins its lines with spaces and presses **Go**.
 While it runs, it checks the sign every second: when the text changes, the billboard restarts with the new text.
 That also works with Create's Display Link, which can write into vanilla signs.
 A pulse while the same text is already running changes nothing. Speed, size, Stop and Restore stay in the GUI.

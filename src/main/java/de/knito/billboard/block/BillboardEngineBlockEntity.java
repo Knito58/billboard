@@ -128,6 +128,23 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 		return stack.is(ModItems.SELECTOR_WAND);
 	}
 
+	/**
+	 * Why this wand can't go into this engine, or null if it fits: it needs both corners,
+	 * and they must mark a wall in this dimension that the engine touches.
+	 */
+	public static Component wandProblem(ItemStack wand, Level level, BlockPos engine) {
+		WandCorners corners = wand.getOrDefault(ModComponents.WAND_CORNERS, WandCorners.EMPTY);
+		if (!corners.isComplete()) {
+			return Component.translatable("message.billboard.need_wand");
+		}
+		GlobalPos a = corners.first().orElseThrow();
+		GlobalPos b = corners.second().orElseThrow();
+		if (!a.dimension().equals(level.dimension()) || !b.dimension().equals(level.dimension())) {
+			return Component.translatable("message.billboard.other_dimension");
+		}
+		return Wall.isNextTo(a.pos(), b.pos(), engine) ? null : Component.translatable("message.billboard.not_attached");
+	}
+
 	/** Pixel blocks must be plain full blocks: no block entity, nothing that falls. */
 	public static boolean isValidPixel(ItemStack stack) {
 		if (!(stack.getItem() instanceof BlockItem blockItem)) {
@@ -226,16 +243,15 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 	/** The wall marked by the wand in the engine, or the reason why there is none. */
 	public Wall.Result wandWall() {
 		ItemStack wand = items.getItem(0);
-		WandCorners corners = wand.getOrDefault(ModComponents.WAND_CORNERS, WandCorners.EMPTY);
-		if (!isValidWand(wand) || !corners.isComplete()) {
+		if (!isValidWand(wand) || level == null) {
 			return Wall.Result.fail(Component.translatable("message.billboard.need_wand"));
 		}
-		GlobalPos a = corners.first().orElseThrow();
-		GlobalPos b = corners.second().orElseThrow();
-		if (level == null || !a.dimension().equals(level.dimension()) || !b.dimension().equals(level.dimension())) {
-			return Wall.Result.fail(Component.translatable("message.billboard.other_dimension"));
+		Component problem = wandProblem(wand, level, worldPosition);
+		if (problem != null) {
+			return Wall.Result.fail(problem);
 		}
-		return Wall.of(a.pos(), b.pos(), worldPosition);
+		WandCorners corners = wand.getOrDefault(ModComponents.WAND_CORNERS, WandCorners.EMPTY);
+		return Wall.of(corners.first().orElseThrow().pos(), corners.second().orElseThrow().pos(), worldPosition);
 	}
 
 	/** @param firstOffset the scroll offset of the first frame for the given wall */
@@ -301,6 +317,36 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 				engine.scroll(serverLevel);
 			}
 		}
+	}
+
+	/**
+	 * Redstone power from any side except the one touching the wall. A redstone block pixel next to
+	 * the engine would otherwise start it again and again.
+	 */
+	public boolean hasSignal() {
+		if (level == null) {
+			return false;
+		}
+		Direction wallSide = wallSide();
+		for (Direction direction : Direction.values()) {
+			if (direction != wallSide && level.hasSignal(worldPosition.relative(direction), direction)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/** Direction from the engine to the wall it touches: the shown wall, else the one the wand marks. Null if none. */
+	private Direction wallSide() {
+		if (!(level instanceof ServerLevel serverLevel)) {
+			return null;
+		}
+		Wall shown = BackupData.get(serverLevel).wallOf(worldPosition);
+		if (shown != null) {
+			return shown.isTouchedBy(worldPosition) ? shown.facing() : null;
+		}
+		Wall.Result result = wandWall();
+		return result.isOk() ? result.wall().facing() : null;
 	}
 
 	/** Called by the block on neighbour updates. A rising redstone edge reads the sign and starts the billboard. */
