@@ -33,6 +33,8 @@
 	"message.billboard.not_loaded": "Ein Teil der Wand ist nicht geladen. Geh näher heran.",
 	"message.billboard.block_entity": "Diese Wand geht nicht: %s bei %s %s %s.",
 	"message.billboard.started": "Billboard läuft auf einer %s x %s Wand.",
+	"message.billboard.picture_shown": "Bild auf einer %s x %s Wand.",
+	"message.billboard.drawn": "Pixel gezeichnet.",
 	"message.billboard.not_running": "Es läuft nichts.",
 	"message.billboard.stopped": "Angehalten. Der Text bleibt stehen bis Start oder Zurück.",
 	"message.billboard.restored": "Wand wiederhergestellt.",

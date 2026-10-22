@@ -17,6 +17,12 @@ public final class BillboardPainter {
 	 */
 	static final int WALL_UPDATE = Block.UPDATE_NEIGHBORS | Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
 
+	/**
+	 * Picture blocks change too often and in too large numbers to tell the neighbours each time.
+	 * The block's own placement reaction is skipped too, so e.g. no golem is built from the blocks.
+	 */
+	static final int PICTURE_UPDATE = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_SKIP_ON_PLACE;
+
 	private BillboardPainter() {
 	}
 
@@ -28,6 +34,11 @@ public final class BillboardPainter {
 		if (level.setBlock(pos, state, WALL_UPDATE)) {
 			level.neighborChanged(pos, state.getBlock(), null);
 		}
+	}
+
+	/** Sets one picture block without waking anything around it. */
+	static void setQuietly(ServerLevel level, BlockPos pos, BlockState state) {
+		level.setBlock(pos, state, PICTURE_UPDATE);
 	}
 
 	/** Number of scroll steps until the text shows the same again: text, then a wall-wide gap. */

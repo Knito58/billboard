@@ -1,6 +1,7 @@
 # Billboard Engine
 
-Fabric mod for Minecraft: turns any flat wall into a scrolling text billboard made of blocks.
+Fabric mod for Minecraft: turns any flat wall into a scrolling text billboard made of blocks,
+or, with ComputerCraft, into a picture or animation made of blocks.
 
 ## Install
 
@@ -28,7 +29,7 @@ On a server, install it on the server and on every client. [CC: Tweaked](https:/
    Breaking the engine also restores the wall.
 
 The font is 5x7. Size 1 makes each letter 5 x 7 blocks; size n draws every dot as n x n blocks
-(size 2 = 10 x 14, size 9 = 45 x 63, the tallest that fits a 64 high wall). Changing the size redraws a shown text at once.
+(size 2 = 10 x 14, size 9 = 45 x 63). Changing the size redraws a shown text at once.
 On a taller wall the text is centered vertically; on a lower one the bottom rows are cut off.
 While a billboard is shown, its wall is protected: players, explosions, pistons, mobs and `/setblock`
 cannot change it, so pixel blocks can't be mined. Blocks attached to the wall (levers, torches, vines) stay put.
@@ -36,7 +37,8 @@ Redstone blocks work as pixels: lamps or dust next to the wall follow the text, 
 The other way round works too: redstone lamps as pixels light up where levers or redstone blocks sit behind the wall.
 Blocks in the wall may still change their own state (a lamp lighting up), they just can't be replaced.
 Scrolling pauses while the wall's chunks are not loaded.
-Walls containing chests, signs or other block entities are refused. Maximum wall size is 256 x 64.
+Walls containing chests, signs or other block entities are refused. Maximum wall size is 256 wide and 384 high, the full height of the world
+(a server can allow up to 512 wide, see [Settings](#settings)).
 The original blocks are saved in the world (`data/billboard/wall_backups.dat`), so a crash does not lose them.
 
 ## Control by sign and redstone
@@ -62,7 +64,7 @@ b.setSize(3)           -- letter size 1 to 9, takes effect at once (also on a st
 b.setPixel("minecraft:gold_block")  -- any full block, no item needed; getPixel() reads it
 print(b.go())          -- true, or false plus a reason such as "need_wand", "need_pixel", "overlap"
 b.go(10)               -- same, but the text starts at wall column 10 (0 = left edge)
-local w, h = b.getWallSize()  -- size of the wall the wand marks, or nil plus a reason
+local w, h = b.getWallSize()  -- size of the shown wall, else the one the wand marks; or nil plus a reason
 b.stop()               -- freeze the text
 b.restore()            -- put the wall back
 b.runOff()             -- let the text run off the wall once, then put the wall back
@@ -72,6 +74,68 @@ b.getText(), b.getSpeed(), b.getSize(), b.isRunning(), b.isShowing(), b.isRunnin
 `runOff()` lets a shown text (running or stopped) scroll on until it has left the wall, then restores the wall.
 If nothing is shown, the text first comes in from the right, crosses the wall once and is gone.
 Wait for it with `while b.isRunningOff() do sleep(0.5) end`.
+
+### Pictures and animations
+
+The engine can also show an image file on the wall. Every wall pixel becomes the block whose color comes
+closest; about 260 plain full blocks are used (wool, concrete, terracotta, planks, stones, ores, metal blocks...),
+all for free, like the pixel block. A portrait is recognizable at 64 blocks wide and looks good from 128 up.
+PNG, JPEG, GIF and BMP are read by the mod; an animated GIF plays by itself on the engine.
+Needs the wand in the engine (the marked wall), but no pixel block and no text.
+
+```lua
+local b = peripheral.find("billboard_engine")
+local w, h = b.getWallSize()                    -- size of the marked (or shown) wall
+local file = fs.open("mona.png", "rb")          -- from the computer's disk ...
+local data = file.readAll() file.close()
+-- local data = http.get("https://example.com/cat.gif", nil, true).readAll()   -- ... or from the web
+print(b.drawImage(data))                        -- true, or false plus a reason such as "need_wand"
+b.drawImage(data, { fit = "fill", dither = true, loop = false })
+while b.isPainting() do sleep(0.1) end          -- wait until the picture (an animation: its first frame) is on the wall
+b.stop()  b.play()                              -- freeze an animation, let it run again
+b.drawPixels(1, 1, 2, 1, "\255\0\0\0\0\255")    -- x, y (from 1, top left), width, height, RGB bytes
+b.restore()                                     -- put the wall back
+b.isShowingPicture()
+```
+
+- `fit = "fit"` (default) shows the whole image centered; the wall keeps its own blocks around it.
+  `"fill"` covers the whole wall and cuts off what sticks out, `"stretch"` pulls the image to the wall's shape.
+- Transparent parts of an image keep the wall's own blocks. So does alpha below 128 in `drawPixels`
+  (4 bytes per pixel: red, green, blue, alpha).
+- `dither = true` mixes neighbouring blocks for in-between colors. Good for big still pictures,
+  not for animations (it makes them flicker).
+- Only changed blocks are set, at most `blocks_per_tick` per tick, so a new picture on a big wall
+  builds up over a few ticks (about a second for 512 x 384). A new picture on the same wall replaces the old one
+  without flashing the original wall in between.
+- Big animations are limited by your computer redrawing the changed chunks, not by the server. Small or mostly
+  still animations run at their full speed; one that changes the whole of a 256 x 256 wall manages a few frames per second.
+- Limits: file up to 16 MB, image up to 4096 x 4096, all frames together up to 16 million wall pixels
+  (a 256 x 256 wall takes 256 frames). A computer's disk holds 1 MB unless raised in the CC: Tweaked config,
+  so bigger files come over `http`.
+- Colors: blocks can't be as bright and saturated as a screen. Pure red (255, 0, 0) ends up as orange concrete;
+  red concrete is about (142, 32, 32).
+- The picture is not saved with the engine: after a restart the wall keeps the last picture (still protected,
+  Restore works), but an animation stands still and the next `drawPixels` starts on a fresh picture.
+  A program in `startup.lua` can simply send it again.
+
+Blocks used for pictures are full, opaque, have no block entity, do not fall, tick, glow or give redstone power
+(no grass, no copper that oxidizes, no sand, no glowstone). A few more are left out by the block tag
+`billboard:not_for_pictures` (TNT, pumpkin heads, sponge, bedrock, redstone lamps, ...); a data pack can add to it.
+The colors were measured from the vanilla textures with `tools/block_colors.py`; resource packs don't change them,
+and blocks from other mods are not used.
+
+## Settings
+
+`config/billboard.properties` is written on first start (on a server: on the server).
+
+```
+max_width=256         # largest wall the wand may mark, up to 512
+max_height=384        # 384 is the full height of the world
+blocks_per_tick=8192  # picture blocks an engine may change per tick
+```
+
+To see a 512 wide wall as a whole you stand about 350 blocks away, which needs a render distance of about 22 chunks.
+Lower `blocks_per_tick` if pictures make the server lag.
 
 ## Command
 
@@ -97,3 +161,5 @@ on GitHub open *Actions → Release → Run workflow*. It builds the jar, tags `
 
 In IntelliJ IDEA: *File → Open* the project folder, wait for the Gradle import, then run the
 `Minecraft Client` run configuration.
+Only Fabric API is loaded with the mod in these runs. To test with CC: Tweaked, JEI or other mods,
+put their jar files into `run/mods`.

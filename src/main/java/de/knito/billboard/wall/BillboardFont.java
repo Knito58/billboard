@@ -12,7 +12,7 @@ public final class BillboardFont {
 	/** Glyph width plus one blank column between characters. */
 	public static final int ADVANCE = GLYPH_WIDTH + 1;
 	public static final int MIN_SIZE = 1;
-	/** Size 9 makes letters 63 blocks high, the tallest that fits a wall of {@link Wall#MAX_HEIGHT}. */
+	/** Size 9 makes letters 63 blocks high. */
 	public static final int MAX_SIZE = 9;
 
 	private static final Map<Character, int[]> GLYPHS = new HashMap<>();

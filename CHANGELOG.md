@@ -15,6 +15,11 @@
   `getWallSize()` returns the width and height of the marked wall.
 - New character `·` (middle dot): a single dot in the middle row. From Lua write it as `"\183"`.
 - Engines from older versions hand their real pixel blocks back (they pop out on top of the engine).
+- Pictures and animations from ComputerCraft: `drawImage(data)` shows a PNG, JPEG, GIF or BMP on the wall,
+  every pixel as the block with the nearest color (about 260 vanilla blocks, all free). Animated GIFs play by themselves.
+  `drawPixels` draws pixels made by a Lua program; `isPainting`, `isShowingPicture`, `play`. `getWallSize()` also reports a shown wall.
+- Bigger walls: up to 256 wide and 384 high (the whole world height) by default, up to 512 wide with `config/billboard.properties`.
+- New picture blocks are spread over several ticks (`blocks_per_tick`), so big walls don't freeze the server.
 
 ## Billboard Engine 1.0.1 for Minecraft 26.3 (Fabric)
 

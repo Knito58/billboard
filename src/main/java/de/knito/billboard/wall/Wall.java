@@ -5,13 +5,13 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
+import de.knito.billboard.BillboardConfig;
+
 /**
  * A flat, vertical wall of blocks seen from one side.
  * Column 0 is the viewer's left edge, row 0 is the top row.
  */
 public record Wall(BlockPos min, BlockPos max, Direction facing) {
-	public static final int MAX_WIDTH = 256;
-	public static final int MAX_HEIGHT = 64;
 
 	/** Either a wall or the reason why there is none. */
 	public record Result(Wall wall, Component error) {
@@ -66,8 +66,10 @@ public record Wall(BlockPos min, BlockPos max, Direction facing) {
 		}
 
 		Wall wall = new Wall(min, max, facing);
-		if (wall.width() > MAX_WIDTH || wall.height() > MAX_HEIGHT) {
-			return Result.fail(Component.translatable("message.billboard.too_big", wall.width(), wall.height(), MAX_WIDTH, MAX_HEIGHT));
+		int maxWidth = BillboardConfig.maxWidth();
+		int maxHeight = BillboardConfig.maxHeight();
+		if (wall.width() > maxWidth || wall.height() > maxHeight) {
+			return Result.fail(Component.translatable("message.billboard.too_big", wall.width(), wall.height(), maxWidth, maxHeight));
 		}
 		if (!wall.isTouchedBy(engine)) {
 			return Result.fail(Component.translatable("message.billboard.not_attached"));
