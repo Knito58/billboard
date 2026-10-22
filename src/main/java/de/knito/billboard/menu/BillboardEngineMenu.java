@@ -49,7 +49,7 @@ public class BillboardEngineMenu extends AbstractContainerMenu {
 
 	/** Client side. */
 	public BillboardEngineMenu(int containerId, Inventory inventory, OpenData openData) {
-		this(containerId, inventory, new SimpleContainer(1), new SimpleContainer(1), new SimpleContainerData(4), null, openData.pos(), openData.text());
+		this(containerId, inventory, new SimpleContainer(1), new SimpleContainer(1), new SimpleContainerData(5), null, openData.pos(), openData.text());
 	}
 
 	/** Server side. */
@@ -61,7 +61,7 @@ public class BillboardEngineMenu extends AbstractContainerMenu {
 		super(ModMenus.BILLBOARD_ENGINE, containerId);
 		checkContainerSize(container, 1);
 		checkContainerSize(pixelSample, 1);
-		checkContainerDataCount(data, 4);
+		checkContainerDataCount(data, 5);
 		this.container = container;
 		this.pixelSample = pixelSample;
 		this.data = data;
@@ -136,6 +136,11 @@ public class BillboardEngineMenu extends AbstractContainerMenu {
 
 	public boolean isRunning() {
 		return data.get(2) != 0;
+	}
+
+	/** True while a Script Box or computer holds the engine; the screen then offers only Stop and Restore. */
+	public boolean isClaimed() {
+		return data.get(4) != 0;
 	}
 
 	@Override

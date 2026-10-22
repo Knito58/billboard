@@ -1,0 +1,234 @@
+package de.knito.billboard.client;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Inventory;
+
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+
+import de.knito.billboard.menu.ScriptBoxMenu;
+import de.knito.billboard.net.ScriptBoxActionPayload;
+import de.knito.billboard.net.ScriptBoxStatePayload;
+import de.knito.billboard.net.ScriptUploadPayload;
+
+/**
+ * The Script Box screen: its files, its output lines, Restart and Stop. Files are dropped onto it from the
+ * file manager: one .lua program and images. There is no editor; programs are written in any text editor.
+ */
+public class ScriptBoxScreen extends AbstractContainerScreen<ScriptBoxMenu> {
+	private static final int WIDTH = 256;
+	private static final int HEIGHT = 216;
+	private static final int FILES_Y = 20;
+	private static final int FILE_ROW = 11;
+	private static final int MAX_FILE_ROWS = 9;
+	private static final int OUTPUT_Y = 124;
+	private static final int OUTPUT_LINES = 7;
+	private static final int PANEL = 0xFFC6C6C6;
+	private static final int DARK = 0xFF555555;
+	private static final int LABEL = 0xFF404040;
+
+	private ScriptBoxStatePayload state;
+	/** Our own message, such as an upload in progress or a file the client refused; cleared by the next state. */
+	private Component note = Component.empty();
+	private boolean noteError;
+
+	public ScriptBoxScreen(ScriptBoxMenu menu, Inventory inventory, Component title) {
+		super(menu, inventory, title, WIDTH, HEIGHT);
+	}
+
+	@Override
+	protected void init() {
+		super.init();
+		boolean canEdit = state != null && state.canEdit();
+		Button restart = addRenderableWidget(Button.builder(Component.translatable("gui.billboard.script.restart"), b -> send(ScriptBoxActionPayload.Action.RESTART, ""))
+				.bounds(leftPos + 8, topPos + HEIGHT - 26, 70, 18).build());
+		Button stop = addRenderableWidget(Button.builder(Component.translatable("gui.billboard.stop"), b -> send(ScriptBoxActionPayload.Action.STOP, ""))
+				.bounds(leftPos + 82, topPos + HEIGHT - 26, 70, 18).build());
+		restart.active = canEdit;
+		stop.active = canEdit;
+		if (state != null && canEdit) {
+			List<ScriptBoxStatePayload.FileEntry> files = state.files();
+			for (int i = 0; i < Math.min(files.size(), MAX_FILE_ROWS); i++) {
+				String name = files.get(i).name();
+				Button remove = addRenderableWidget(Button.builder(Component.literal("x"), b -> send(ScriptBoxActionPayload.Action.DELETE, name))
+						.bounds(leftPos + WIDTH - 20, topPos + FILES_Y + 12 + i * FILE_ROW - 1, 11, 10).build());
+				remove.setTooltip(Tooltip.create(Component.translatable("gui.billboard.script.remove", name)));
+			}
+		}
+	}
+
+	/** New state from the server; the file buttons are rebuilt to match. */
+	public void setState(ScriptBoxStatePayload newState) {
+		boolean filesChanged = state == null || state.canEdit() != newState.canEdit() || !state.files().equals(newState.files());
+		state = newState;
+		note = Component.empty();
+		if (filesChanged) {
+			rebuildWidgets();
+		}
+	}
+
+	private void send(ScriptBoxActionPayload.Action action, String name) {
+		ClientPlayNetworking.send(new ScriptBoxActionPayload(action, name));
+	}
+
+	private void note(Component message, boolean error) {
+		note = message;
+		noteError = error;
+	}
+
+	/** Files dropped from the file manager: checked here first, then sent in pieces. The server checks again. */
+	@Override
+	public void onFilesDrop(List<Path> paths) {
+		if (state == null) {
+			return;
+		}
+		if (!state.canEdit()) {
+			note(Component.translatable("gui.billboard.script.not_yours"), true);
+			return;
+		}
+		List<Path> programs = new ArrayList<>();
+		List<Path> images = new ArrayList<>();
+		List<String> ignored = new ArrayList<>();
+		for (Path path : paths) {
+			String name = path.getFileName().toString();
+			String lower = name.toLowerCase(Locale.ROOT);
+			if (!Files.isRegularFile(path)) {
+				ignored.add(name);
+			} else if (lower.endsWith(".lua")) {
+				programs.add(path);
+			} else if (Arrays.asList(".png", ".jpg", ".jpeg", ".gif", ".bmp").stream().anyMatch(lower::endsWith)) {
+				images.add(path);
+			} else {
+				ignored.add(name);
+			}
+		}
+		if (programs.size() > 1) {
+			note(Component.translatable("gui.billboard.script.one_program"), true);
+			return;
+		}
+		List<Path> send = new ArrayList<>(images);
+		send.addAll(programs); // the program last, so it starts with its images already there
+		String problem = null;
+		for (Path path : send) {
+			String name = path.getFileName().toString();
+			boolean program = programs.contains(path);
+			long limit = (program ? state.maxLuaKb() : state.maxImageKb()) * 1024L;
+			try {
+				byte[] data = Files.readAllBytes(path);
+				if (data.length > limit) {
+					problem = name + " > " + limit / 1024 + " KB";
+					continue;
+				}
+				upload(name, data);
+			} catch (IOException e) {
+				problem = name + ": " + e.getMessage();
+			}
+		}
+		if (problem != null) {
+			note(Component.translatable("gui.billboard.script.not_sent", problem), true);
+		} else if (!ignored.isEmpty()) {
+			note(Component.translatable("gui.billboard.script.ignored", String.join(", ", ignored)), true);
+		} else if (!send.isEmpty()) {
+			note(Component.translatable("gui.billboard.script.sending", send.size()), false);
+		}
+	}
+
+	private static void upload(String name, byte[] data) {
+		for (int offset = 0; offset < data.length; offset += ScriptUploadPayload.CHUNK) {
+			int length = Math.min(ScriptUploadPayload.CHUNK, data.length - offset);
+			ClientPlayNetworking.send(new ScriptUploadPayload(name, data.length, offset, Arrays.copyOfRange(data, offset, offset + length)));
+		}
+	}
+
+	@Override
+	public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+		super.extractBackground(graphics, mouseX, mouseY, a);
+		int x = leftPos;
+		int y = topPos;
+		graphics.fill(x, y, x + WIDTH, y + HEIGHT, PANEL);
+		graphics.outline(x, y, WIDTH, HEIGHT, DARK);
+		// Files and output sit in sunken fields.
+		graphics.fill(x + 7, y + FILES_Y + 10, x + WIDTH - 7, y + FILES_Y + 12 + MAX_FILE_ROWS * FILE_ROW, 0xFFE8E8E8);
+		graphics.outline(x + 7, y + FILES_Y + 10, WIDTH - 14, MAX_FILE_ROWS * FILE_ROW + 2, DARK);
+		graphics.fill(x + 7, y + OUTPUT_Y + 10, x + WIDTH - 7, y + OUTPUT_Y + 12 + OUTPUT_LINES * 10, 0xFF1E1E1E);
+	}
+
+	@Override
+	protected void extractLabels(GuiGraphicsExtractor graphics, int xm, int ym) {
+		graphics.text(font, title, 8, 6, LABEL, false);
+		if (state == null) {
+			return;
+		}
+		int statusColor = switch (state.status()) {
+			case "Running" -> 0xFF207020;
+			case "Error" -> 0xFFA02020;
+			default -> 0xFF806000;
+		};
+		graphics.text(font, state.status(), WIDTH - 8 - font.width(state.status()), 6, statusColor, false);
+
+		graphics.text(font, Component.translatable("gui.billboard.script.files", state.maxImages()), 8, FILES_Y, LABEL, false);
+		List<ScriptBoxStatePayload.FileEntry> files = state.files();
+		if (files.isEmpty()) {
+			graphics.text(font, Component.translatable("gui.billboard.script.drop_hint"), 12, FILES_Y + 13, 0xFF707070, false);
+		}
+		for (int i = 0; i < Math.min(files.size(), MAX_FILE_ROWS); i++) {
+			ScriptBoxStatePayload.FileEntry file = files.get(i);
+			int rowY = FILES_Y + 13 + i * FILE_ROW;
+			boolean program = file.name().toLowerCase(Locale.ROOT).endsWith(".lua");
+			String size = file.size() < 1024 ? file.size() + " B" : (file.size() + 512) / 1024 + " KB";
+			graphics.text(font, fit(file.name(), 170), 12, rowY, program ? 0xFF2050A0 : LABEL, false);
+			graphics.text(font, size, WIDTH - 26 - font.width(size), rowY, 0xFF707070, false);
+		}
+
+		graphics.text(font, Component.translatable("gui.billboard.script.output"), 8, OUTPUT_Y, LABEL, false);
+		List<ScriptBoxStatePayload.Line> lines = state.lines();
+		int first = Math.max(0, lines.size() - OUTPUT_LINES);
+		for (int i = first; i < lines.size(); i++) {
+			ScriptBoxStatePayload.Line line = lines.get(i);
+			graphics.text(font, fit(line.text(), WIDTH - 22), 11, OUTPUT_Y + 13 + (i - first) * 10, line.error() ? 0xFFFF6060 : 0xFFE0E0E0, false);
+		}
+
+		if (!note.getString().isEmpty()) {
+			graphics.text(font, fit(note.getString(), WIDTH - 164), 158, HEIGHT - 21, noteError ? 0xFFA02020 : 0xFF207020, false);
+		}
+	}
+
+	/** Cuts a text to the width, ending in "..." if it was too long. */
+	private String fit(String text, int width) {
+		if (font.width(text) <= width) {
+			return text;
+		}
+		return font.plainSubstrByWidth(text, width - font.width("...")).stripTrailing() + "...";
+	}
+
+	@Override
+	protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+		super.extractTooltip(graphics, mouseX, mouseY);
+		// The full line under the mouse, for output lines and notes cut short.
+		if (state != null && mouseX >= leftPos + 7 && mouseX < leftPos + WIDTH - 7) {
+			int row = (mouseY - topPos - OUTPUT_Y - 13) / 10;
+			List<ScriptBoxStatePayload.Line> lines = state.lines();
+			int first = Math.max(0, lines.size() - OUTPUT_LINES);
+			if (mouseY >= topPos + OUTPUT_Y + 13 && row < OUTPUT_LINES && first + row < lines.size()) {
+				String text = lines.get(first + row).text();
+				if (font.width(text) > WIDTH - 22) {
+					graphics.setTooltipForNextFrame(Component.literal(text), mouseX, mouseY);
+				}
+			}
+		}
+		if (!note.getString().isEmpty() && mouseX >= leftPos + 158 && mouseY >= topPos + HEIGHT - 22 && mouseY < topPos + HEIGHT - 12) {
+			graphics.setTooltipForNextFrame(note, mouseX, mouseY);
+		}
+	}
+}

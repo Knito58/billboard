@@ -12,17 +12,25 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import de.knito.billboard.ModBlocks;
 import de.knito.billboard.ModMenus;
 import de.knito.billboard.net.EngineStatusPayload;
+import de.knito.billboard.net.ScriptBoxStatePayload;
 
 public class BillboardClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		MenuScreens.register(ModMenus.BILLBOARD_ENGINE, BillboardEngineScreen::new);
+		MenuScreens.register(ModMenus.SCRIPT_BOX, ScriptBoxScreen::new);
 
 		ClientPlayNetworking.registerGlobalReceiver(EngineStatusPayload.TYPE, (payload, context) -> {
 			if (context.client().gui.screen() instanceof BillboardEngineScreen screen) {
 				screen.setStatus(payload.message());
 			} else {
 				context.player().sendOverlayMessage(payload.message());
+			}
+		});
+
+		ClientPlayNetworking.registerGlobalReceiver(ScriptBoxStatePayload.TYPE, (payload, context) -> {
+			if (context.client().gui.screen() instanceof ScriptBoxScreen screen) {
+				screen.setState(payload);
 			}
 		});
 

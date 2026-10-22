@@ -58,13 +58,17 @@ in the middle instead of the glass pane (4 iron, 4 redstone, 1 paper), and place
 
 - One box = one program. It starts when the world (or its chunk) loads and runs while the chunk is loaded.
   It does not remember anything between runs; it starts again from the top.
-- The program and its images live in the world folder: `saves/<world>/billboard/scripts/<id>/`
-  (on a server `world/billboard/scripts/<id>/`): exactly one `.lua` file plus images (PNG, JPEG, GIF, BMP).
-  Edit them with any text editor. `/billboard script <x y z> status` shows the folder of a box.
-  *(Dragging files onto the box's screen comes with the next update.)*
-- Right-click the box to see its state and the last output lines in chat.
-  `/billboard script <x y z> restart` starts the program again, `stop` is the hand brake (it stays off,
-  also after a restart of the world, until `restart`).
+- Right-click the box to open its screen: its files, the last output lines (errors in red), **Restart** and **Stop**.
+  Stop is the hand brake: the program stays off, also after a restart of the world, until Restart.
+- Drag files from your file manager onto the screen: one `.lua` program plus images (PNG, JPEG, GIF, BMP).
+  A new `.lua` file replaces the old program, whatever its name, and starts it. An image replaces the image of
+  the same name. The **x** behind a file removes it. There is no editor in the game: write the program in any text editor
+  and drop it again after a change.
+- Only the player who placed the box and operators may change it (with `scripts_ops_only=true` only operators).
+  Others can look at the screen.
+- The files live in the world folder: `saves/<world>/billboard/scripts/<id>/`
+  (on a server `world/billboard/scripts/<id>/`). A server admin can also edit them there directly;
+  `/billboard script <x y z> status` shows the folder, `restart` starts the program again, `stop` stops it.
 - Breaking the box drops it blank and deletes its folder. Keep your originals on your own disk.
 
 The `engine` table has the same functions as the ComputerCraft peripheral below, so a CC script runs after

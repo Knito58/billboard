@@ -1,9 +1,11 @@
 package de.knito.billboard.client;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -32,6 +34,8 @@ public class BillboardEngineScreen extends AbstractContainerScreen<BillboardEngi
 	private static final int STATUS_Y = 108;
 
 	private EditBox textBox;
+	/** Disabled while a program holds the engine. */
+	private final List<AbstractWidget> settings = new ArrayList<>();
 	private int speed;
 	private int size;
 	private Component status = Component.empty();
@@ -53,18 +57,20 @@ public class BillboardEngineScreen extends AbstractContainerScreen<BillboardEngi
 		textBox.setHint(Component.translatable("gui.billboard.text_hint"));
 		textBox.setValue(oldText);
 		addRenderableWidget(textBox);
+		settings.clear();
+		settings.add(textBox);
 
-		addRenderableWidget(Button.builder(Component.literal("-"), b -> changeSpeed(-1))
-				.bounds(leftPos + 56, topPos + 41, 16, 18).build());
-		addRenderableWidget(Button.builder(Component.literal("+"), b -> changeSpeed(1))
-				.bounds(leftPos + 152, topPos + 41, 16, 18).build());
-		addRenderableWidget(Button.builder(Component.literal("-"), b -> changeSize(-1))
-				.bounds(leftPos + 56, topPos + 63, 16, 18).build());
-		addRenderableWidget(Button.builder(Component.literal("+"), b -> changeSize(1))
-				.bounds(leftPos + 152, topPos + 63, 16, 18).build());
+		settings.add(addRenderableWidget(Button.builder(Component.literal("-"), b -> changeSpeed(-1))
+				.bounds(leftPos + 56, topPos + 41, 16, 18).build()));
+		settings.add(addRenderableWidget(Button.builder(Component.literal("+"), b -> changeSpeed(1))
+				.bounds(leftPos + 152, topPos + 41, 16, 18).build()));
+		settings.add(addRenderableWidget(Button.builder(Component.literal("-"), b -> changeSize(-1))
+				.bounds(leftPos + 56, topPos + 63, 16, 18).build()));
+		settings.add(addRenderableWidget(Button.builder(Component.literal("+"), b -> changeSize(1))
+				.bounds(leftPos + 152, topPos + 63, 16, 18).build()));
 
-		addRenderableWidget(Button.builder(Component.translatable("gui.billboard.go"), b -> send(EngineActionPayload.Action.GO))
-				.bounds(leftPos + 8, topPos + 86, 50, 18).build());
+		settings.add(addRenderableWidget(Button.builder(Component.translatable("gui.billboard.go"), b -> send(EngineActionPayload.Action.GO))
+				.bounds(leftPos + 8, topPos + 86, 50, 18).build()));
 		addRenderableWidget(Button.builder(Component.translatable("gui.billboard.stop"), b -> send(EngineActionPayload.Action.STOP))
 				.bounds(leftPos + 63, topPos + 86, 50, 18).build());
 		addRenderableWidget(Button.builder(Component.translatable("gui.billboard.restore"), b -> send(EngineActionPayload.Action.RESTORE))
@@ -136,6 +142,18 @@ public class BillboardEngineScreen extends AbstractContainerScreen<BillboardEngi
 	}
 
 	@Override
+	protected void containerTick() {
+		super.containerTick();
+		boolean free = !menu.isClaimed();
+		for (AbstractWidget widget : settings) {
+			widget.active = free;
+		}
+		if (textBox != null) {
+			textBox.setEditable(free);
+		}
+	}
+
+	@Override
 	public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
 		super.extractBackground(graphics, mouseX, mouseY, a);
 		graphics.blit(RenderPipelines.GUI_TEXTURED, BACKGROUND, leftPos, topPos, 0.0F, 0.0F, imageWidth, imageHeight, 256, 256);
@@ -149,7 +167,10 @@ public class BillboardEngineScreen extends AbstractContainerScreen<BillboardEngi
 
 		Component state;
 		int stateColor;
-		if (menu.isShowing() && menu.isRunning()) {
+		if (menu.isClaimed()) {
+			state = Component.translatable("gui.billboard.state_claimed");
+			stateColor = 0xFF2050A0;
+		} else if (menu.isShowing() && menu.isRunning()) {
 			state = Component.translatable("gui.billboard.state_running");
 			stateColor = 0xFF207020;
 		} else if (menu.isShowing()) {

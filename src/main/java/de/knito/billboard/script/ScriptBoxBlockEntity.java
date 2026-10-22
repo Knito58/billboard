@@ -13,7 +13,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permissions;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -21,15 +27,19 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
+import net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider;
+
 import de.knito.billboard.BillboardConfig;
 import de.knito.billboard.ModBlockEntities;
 import de.knito.billboard.block.BillboardEngineBlockEntity;
+import de.knito.billboard.menu.ScriptBoxMenu;
+import de.knito.billboard.net.ScriptBoxStatePayload;
 
 /**
  * One Script Box: the id of its file folder, its owner, and the program running now. The program starts when
  * the box is loaded and stops when it is unloaded; it keeps nothing between runs.
  */
-public class ScriptBoxBlockEntity extends BlockEntity {
+public class ScriptBoxBlockEntity extends BlockEntity implements ExtendedMenuProvider<ScriptBoxMenu.OpenData> {
 	/** Output lines kept for the screen and the chat summary. */
 	public static final int MAX_LINES = 50;
 	private static final int MAX_LINE_LENGTH = 200;
@@ -45,6 +55,8 @@ public class ScriptBoxBlockEntity extends BlockEntity {
 	/** True once this load tried to start the program, so a broken program is not compiled every tick. */
 	private boolean started;
 	private final Deque<Line> lines = new ArrayDeque<>();
+	/** Counts every change an open screen should see: output, state, files. */
+	private int version;
 
 	public ScriptBoxBlockEntity(BlockPos pos, BlockState state) {
 		super(ModBlockEntities.SCRIPT_BOX, pos, state);
@@ -111,7 +123,7 @@ public class ScriptBoxBlockEntity extends BlockEntity {
 		Path folder = folder(serverLevel.getServer());
 		List<Path> programs = ScriptStorage.programs(folder);
 		if (programs.isEmpty()) {
-			print("No program yet. Put one .lua file into " + folder, true);
+			print("No program yet. Drop one .lua file onto this screen (or put it into " + folder + ").", true);
 			runnerChanged();
 			return;
 		}
@@ -154,6 +166,7 @@ public class ScriptBoxBlockEntity extends BlockEntity {
 
 	/** Shows the program's state on the block, for the light on its label. */
 	void runnerChanged() {
+		version++;
 		if (level == null || isRemoved()) {
 			return;
 		}
@@ -165,6 +178,7 @@ public class ScriptBoxBlockEntity extends BlockEntity {
 	}
 
 	void print(String text, boolean error) {
+		version++;
 		for (String line : text.split("\n", -1)) {
 			lines.addLast(new Line(line.length() > MAX_LINE_LENGTH ? line.substring(0, MAX_LINE_LENGTH) + "..." : line, error));
 		}
@@ -254,6 +268,92 @@ public class ScriptBoxBlockEntity extends BlockEntity {
 
 	public UUID owner() {
 		return owner;
+	}
+
+	public int version() {
+		return version;
+	}
+
+	/** Whether this player may give the box files, remove them, restart or stop it: its owner, or an operator. */
+	public boolean canEdit(ServerPlayer player) {
+		boolean op = player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER);
+		if (BillboardConfig.scriptsOpsOnly()) {
+			return op;
+		}
+		return op || player.getUUID().equals(owner);
+	}
+
+	/** Everything the screen shows, for this player. */
+	public ScriptBoxStatePayload statePayload(ServerPlayer player) {
+		List<ScriptBoxStatePayload.FileEntry> files = new ArrayList<>();
+		for (Path file : ScriptStorage.files(folder(player.level().getServer()))) {
+			long size;
+			try {
+				size = Files.size(file);
+			} catch (IOException e) {
+				size = 0;
+			}
+			files.add(new ScriptBoxStatePayload.FileEntry(file.getFileName().toString(), (int) Math.min(Integer.MAX_VALUE, size)));
+		}
+		List<ScriptBoxStatePayload.Line> shown = lines.stream().map(line -> new ScriptBoxStatePayload.Line(line.text(), line.error())).toList();
+		return new ScriptBoxStatePayload(statusText(), canEdit(player), files, shown,
+				BillboardConfig.scriptMaxLuaKb(), BillboardConfig.scriptMaxImages(), BillboardConfig.scriptMaxImageKb());
+	}
+
+	/**
+	 * Stores a file a player dropped onto the screen, already checked by {@link ScriptUploads}. A program replaces the old
+	 * program, whatever its name, and starts it. An image replaces the image of the same name; a running program
+	 * sees it on its next drawImage, and a program that ended (perhaps missing this image) starts again.
+	 */
+	void storeFile(String name, byte[] data) {
+		if (!(level instanceof ServerLevel serverLevel)) {
+			return;
+		}
+		Path folder = folder(serverLevel.getServer());
+		try {
+			Files.createDirectories(folder);
+			if (ScriptStorage.isProgram(name)) {
+				for (Path old : ScriptStorage.programs(folder)) {
+					Files.deleteIfExists(old);
+				}
+			}
+			Files.write(folder.resolve(name), data);
+		} catch (IOException e) {
+			print("Could not save " + name + ".", true);
+			return;
+		}
+		print("Got " + name + " (" + Math.max(1, data.length / 1024) + " KB).", false);
+		if (ScriptStorage.isProgram(name) || !halted && scriptState() != ScriptState.RUNNING) {
+			restart();
+		}
+	}
+
+	void deleteFile(String name) {
+		if (!(level instanceof ServerLevel serverLevel) || !ScriptStorage.isValidName(name)) {
+			return;
+		}
+		try {
+			if (Files.deleteIfExists(folder(serverLevel.getServer()).resolve(name))) {
+				print("Removed " + name + ".", false);
+			}
+		} catch (IOException e) {
+			print("Could not remove " + name + ".", true);
+		}
+	}
+
+	@Override
+	public Component getDisplayName() {
+		return Component.translatable("block.billboard.script_box");
+	}
+
+	@Override
+	public AbstractContainerMenu createMenu(int containerId, Inventory inventory, Player player) {
+		return new ScriptBoxMenu(containerId, inventory, this);
+	}
+
+	@Override
+	public ScriptBoxMenu.OpenData getScreenOpeningData(ServerPlayer player) {
+		return new ScriptBoxMenu.OpenData(worldPosition);
 	}
 
 	// ---- life cycle ----

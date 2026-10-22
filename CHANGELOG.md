@@ -6,6 +6,9 @@
   `sleep`, `print`, `os.time`/`os.date`/`os.clock`/`os.epoch`/`os.day` and `textutils.formatTime`.
   Recipe: the engine recipe with paper instead of the glass pane. Breaking it drops it blank and deletes its files.
   `/billboard script <pos> restart|stop|status`. Lua VM: Cobalt (MIT), packed into the mod.
+- Script Box screen: drag the `.lua` file and images from your file manager onto it. It lists the files (with a button
+  to remove each), shows the last output lines and has Restart and Stop. Only the placer and operators may change a box.
+- The engine screen greys out the text, speed, size and Go while a program holds the engine.
 - `show(text)` for Script Boxes and ComputerCraft: sets the text and shows it standing still at the left edge
   (setText, go and stop in one). The same text again is not redrawn, so a clock can simply call it every second.
 - Engines can be claimed: `claim()`, `release()`, `isClaimed()` for Script Boxes and ComputerCraft. A claimed engine takes
