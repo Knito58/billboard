@@ -2,6 +2,8 @@ All text uses one 5x7 font: every letter is 5 dots wide and 7 dots high, with on
 
 ![All characters of the font](images/font.png)
 
+![Walls with text in sizes 9, 3 and 1, side by side](images/04-letter-sizes.jpg)
+
 ## Characters
 
 - Letters `A-Z` and `a-z`, digits, and all ASCII punctuation: `! " # $ % & ' ( ) * + , - . / : ; < = > ? @ [ \ ] ^ _ { | } ~` and the backquote.

@@ -4,6 +4,8 @@ All examples are written for the [Script Box](Script-Box). For CC: Tweaked add
 
 ## Clock
 
+![A station clock at dusk showing 23:24 in white blocks](images/07-station-clock.jpg)
+
 Real time of the server, standing still at the left edge. `show()` does not redraw the same text,
 so calling it every second costs nothing.
 
@@ -89,6 +91,8 @@ while engine.isRunningOff() do sleep(0.2) end
 ```
 
 ## Countdown launch show
+
+![The launch site with the countdown on the wall](images/10-countdown-show.jpg)
 
 A countdown from 10 at the right end of the wall in gold. The 0 runs off, then a single redstone block walks to the
 left end of the wall and sets off a contraption there: a lamp, a repeater line, a door, a minecart, fireworks.

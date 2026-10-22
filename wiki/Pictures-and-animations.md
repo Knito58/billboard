@@ -3,7 +3,12 @@ Animated GIFs play by themselves.
 
 ![The Mona Lisa and three block previews of growing width](images/mona-lisa-preview.jpg)
 
-*Left the original, then previews computed from the block textures at growing wall widths. In-game screenshots follow.*
+*Left the original, then previews computed from the block textures at growing wall widths.*
+
+![The Mona Lisa appearing on a 200 x 298 block wall](images/picture-building-up.gif)
+![Close-up: every pixel is a vanilla block](images/11-pixels-are-blocks.jpg)
+
+A 200 x 298 wall building up, and a close-up from a few blocks away.
 
 ## What you need
 

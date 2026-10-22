@@ -35,6 +35,8 @@ With JEI or REI installed you can look them up in game, as usual.
 
 ## Your first billboard
 
+![Text scrolling over a stone wall in gold blocks](images/scrolling-text.gif)
+
 1. Build a flat wall, one block thick, for example 40 wide and 9 high out of stone.
 2. Right-click one corner of the wall with the **Selector Wand**, then the opposite corner.
    The action bar shows the size while you hold the wand.

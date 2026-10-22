@@ -1,4 +1,4 @@
-**[Home](Home)**
+**[Home](Home)** · **[Gallery](Gallery)**
 
 **Basics**
 - [Getting started](Getting-started)
