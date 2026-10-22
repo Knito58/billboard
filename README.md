@@ -4,6 +4,7 @@ Fabric mod for Minecraft: turns any flat wall into a scrolling text billboard ma
 or into a picture or animation made of blocks.
 
 **Manual: [the wiki](https://github.com/Knito58/billboard/wiki)** (recipes, every function, examples, FAQ).
+**Trailer: [77 seconds on YouTube](https://youtu.be/al35hSXC-FU)**, more pictures in the [Gallery](https://github.com/Knito58/billboard/wiki/Gallery).
 The wiki pages live in the `wiki/` folder and are copied to the Wiki tab on every merge.
 
 ## Install

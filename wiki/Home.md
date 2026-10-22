@@ -3,6 +3,8 @@ a picture or an animation, all made of real blocks.
 
 ![A town square at dusk with BILLBOARD in gold blocks on a black wall](images/01-town-square.jpg)
 
+**[Watch the 77-second trailer on YouTube](https://youtu.be/al35hSXC-FU)**
+
 - **Text** in a 5x7 font, 9 sizes, any full block as the pixel, scrolling or standing still.
 - **Pictures and animated GIFs**: every pixel becomes the vanilla block with the closest color.
 - **Lua scripting built in**: the [Script Box](Script-Box) runs your program right in the game. Clocks, slide shows,
