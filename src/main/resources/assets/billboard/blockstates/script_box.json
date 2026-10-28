@@ -1,1 +1,0 @@
-{"variants":{"state=stopped":{"model":"billboard:block/script_box"},"state=running":{"model":"billboard:block/script_box_running"},"state=error":{"model":"billboard:block/script_box_error"}}}

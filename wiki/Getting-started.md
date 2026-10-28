@@ -1,8 +1,8 @@
 ## Install
 
 1. Install [Fabric Loader](https://fabricmc.net/use/) 0.19.5 or newer for Minecraft 26.3. Minecraft 26.3 needs Java 25.
-2. Put the Billboard Engine jar and [Fabric API](https://modrinth.com/mod/fabric-api) into the `mods` folder.
-3. On a server: install both on the server **and** on every client.
+2. Put the Billboard Engine jar, [Billboard API](https://github.com/Knito58/Billboard-API) and [Fabric API](https://modrinth.com/mod/fabric-api) into the `mods` folder.
+3. On a server: install all three on the server **and** on every client.
 
 [CC: Tweaked](https://modrinth.com/mod/cc-tweaked) is optional. Everything except the ComputerCraft peripheral works without it.
 
@@ -23,7 +23,7 @@
 | Redstone | Glass pane | Redstone |
 | Iron ingot | Redstone | Iron ingot |
 
-**Script Box**: the engine recipe with paper in the middle instead of the glass pane.
+**Lua Box** (from Billboard API): the engine recipe with paper in the middle instead of the glass pane.
 
 | | | |
 |:-:|:-:|:-:|

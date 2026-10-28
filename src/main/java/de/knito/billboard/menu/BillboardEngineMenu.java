@@ -138,7 +138,7 @@ public class BillboardEngineMenu extends AbstractContainerMenu {
 		return data.get(2) != 0;
 	}
 
-	/** True while a Script Box or computer holds the engine; the screen then offers only Stop and Restore. */
+	/** True while a Lua Box or computer holds the engine; the screen then offers only Stop and Restore. */
 	public boolean isClaimed() {
 		return data.get(4) != 0;
 	}

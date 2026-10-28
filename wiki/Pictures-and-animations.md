@@ -14,11 +14,11 @@ A 200 x 298 wall building up, and a close-up from a few blocks away.
 
 - The engine with its wand (the marked wall). No pixel block and no text.
 - An image: PNG, JPEG, GIF or BMP.
-- A program: the [Script Box](Script-Box) (drop the image onto the box) or a CC: Tweaked computer
+- A program: the [Lua Box](Lua-Box) (drop the image onto the box) or a CC: Tweaked computer
   (image from its disk or from the internet).
 
 ```lua
--- Script Box: mona.png was dropped onto the box
+-- Lua Box: mona.png was dropped onto the box
 engine.claim()
 local ok, reason = engine.drawImage("mona.png", { fit = "fill", dither = true })
 print(ok, reason)
@@ -72,12 +72,12 @@ animations run at their full speed; one that changes all of a 256 x 256 wall man
 
 ## Limits
 
-- File up to 16 MB (Script Box: 2 MB per image by default), image up to 4096 x 4096.
+- File up to 16 MB (Lua Box: 2 MB per image by default), image up to 4096 x 4096.
 - All frames together up to 16 million wall pixels: a 256 x 256 wall takes 256 frames.
 - A CC computer's disk holds 1 MB unless raised in the CC: Tweaked config, so bigger files come over `http`.
 
 ## After a restart
 
 The picture is not saved with the engine. After a world restart the wall keeps the last picture (still protected,
-Restore works), but an animation stands still. A Script Box simply starts its program again and shows it anew;
+Restore works), but an animation stands still. A Lua Box simply starts its program again and shows it anew;
 on CC put the program into `startup.lua`.

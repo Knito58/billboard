@@ -29,14 +29,14 @@ Everything you see here is made of real blocks.
 
 ## Scripting
 
-![The Script Box screen](images/06-script-box.jpg)
-*The [Script Box](Script-Box): drop a .lua file and images on it. Lua is built in, CC: Tweaked is not needed.*
+![The Lua Box screen](images/06-script-box.jpg)
+*The [Lua Box](Lua-Box): drop `main.lua` and images on it. It comes with Billboard API, CC: Tweaked is not needed.*
 
 ![A station clock showing 23:24](images/07-station-clock.jpg)
 *A [clock](Examples#clock) in a few lines of Lua.*
 
 ![The launch site with the countdown](images/10-countdown-show.jpg)
-*The [countdown launch show](Examples#countdown-launch-show): one engine, one Script Box, fireworks at zero.*
+*The [countdown launch show](Examples#countdown-launch-show): one engine, one Lua Box, fireworks at zero.*
 
 ## Pictures and animations
 

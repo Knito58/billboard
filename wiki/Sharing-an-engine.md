@@ -1,4 +1,4 @@
-Several Script Boxes and CC computers may touch the same engine. Without rules they would fight over it.
+Several Lua Boxes and CC computers may touch the same engine. Without rules they would fight over it.
 `claim()` and `release()` decide who may change it.
 
 ## The rules
@@ -20,7 +20,7 @@ Two boxes, each with its own text, share one wall. Each waits for its turn, lets
 then gives the engine to the other:
 
 ```lua
--- turns.lua: put this into two Script Boxes, with a different TEXT in each
+-- turns.lua: put this into two Lua Boxes, with a different TEXT in each
 local TEXT = "BOX ONE"
 
 while true do
