@@ -10,7 +10,7 @@ The wiki pages live in the `wiki/` folder and are copied to the Wiki tab on ever
 ## Install
 
 Download the jar from [Releases](https://github.com/Knito58/billboard/releases) and put it into the `mods` folder
-together with [Fabric API](https://modrinth.com/mod/fabric-api). Minecraft 26.3, Fabric Loader 0.19.5+, Java 25.
+together with [Billboard API](https://github.com/Knito58/Billboard-API) and [Fabric API](https://modrinth.com/mod/fabric-api). Minecraft 26.3, Fabric Loader 0.19.5+, Java 25.
 On a server, install it on the server and on every client. [CC: Tweaked](https://modrinth.com/mod/cc-tweaked) is optional.
 
 ## How to use
@@ -55,31 +55,23 @@ That also works with Create's Display Link, which can write into vanilla signs.
 A pulse while the same text is already running changes nothing. Speed, size, Stop and Restore stay in the GUI.
 Wax the sign with a honeycomb so nobody can edit it by accident; the engine still reads it.
 
-## Script Box (Lua, no other mod needed)
+## Lua Box (Lua, comes with Billboard API)
 
-The Script Box runs one Lua program that drives the engine it touches. Craft it like the engine, with paper
-in the middle instead of the glass pane (4 iron, 4 redstone, 1 paper), and place it against the engine.
+Since 2.0 the Lua Box (the former Script Box) is part of [Billboard API](https://github.com/Knito58/Billboard-API), which Billboard Engine needs. Its screen, files,
+limits and settings are described there. Craft it like the engine, with paper in the middle instead of the glass
+pane (4 iron, 4 redstone, 1 paper), and place it against the engine, or join box and engine with Data Pipes.
+The program is `main.lua`; images for `drawImage` are dropped onto the box as well.
 
-- One box = one program. It starts when the world (or its chunk) loads and runs while the chunk is loaded.
-  It does not remember anything between runs; it starts again from the top.
-- Right-click the box to open its screen: its files, the last output lines (errors in red), **Restart** and **Stop**.
-  Stop is the hand brake: the program stays off, also after a restart of the world, until Restart.
-- Drag files from your file manager onto the screen: one `.lua` program plus images (PNG, JPEG, GIF, BMP).
-  A new `.lua` file replaces the old program, whatever its name, and starts it. An image replaces the image of
-  the same name. The **x** behind a file removes it. There is no editor in the game: write the program in any text editor
-  and drop it again after a change.
-- In single player the **Folder** button opens the box's folder in your file manager, and a click on a file opens it
-  with your system's program for it (your text editor for `.lua`). After saving a change there, press **Restart**.
-- Only the player who placed the box and operators may change it (with `scripts_ops_only=true` only operators).
-  Others can look at the screen.
-- The files live in the world folder: `saves/<world>/billboard/scripts/<id>/`
-  (on a server `world/billboard/scripts/<id>/`). A server admin can also edit them there directly;
-  `/billboard script <x y z> status` shows the folder, `restart` starts the program again, `stop` stops it.
-- Breaking the box drops it blank and deletes its folder. Keep your originals on your own disk.
+`engine` is the one Billboard Engine the box reaches. With several engines, name them in the box's Network view and use
+`network.findByName(name)`, or `network.find("billboard:engine")`. By default a box drives only engines placed by the
+same player.
 
-The `engine` table has the same functions as the ComputerCraft peripheral below, so a CC script runs after
+`engine` has the same functions as the ComputerCraft peripheral below, so a CC script runs after
 replacing `peripheral.find("billboard_engine")` with `engine`. Only `drawImage` takes the name of an image
-in the box's folder instead of the file's bytes:
+in the box's folder instead of the file's bytes.
+
+Worlds from 1.x: Script Boxes become Lua Boxes and keep their files; the program is renamed to `main.lua`.
+`/billboard script` is now `/luabox`, and the Script Box settings move to `config/billboard_api.properties`.
 
 A clock in four lines:
 
@@ -102,18 +94,9 @@ engine.drawImage("mona.png", { fit = "fill" })
 print(os.date("%H:%M"), textutils.formatTime(os.time(), true))
 ```
 
-Besides `engine` a program has standard Lua (`string`, `table`, `math`, `utf8`, `coroutine`), `sleep`, `print`,
-`os.time`, `os.date`, `os.clock`, `os.day`, `os.epoch` and `textutils.formatTime` as in CC: Tweaked.
-No files, no internet, no peripherals.
-
-Limits: each box gets 2 ms of Lua time per tick and then pauses until the next tick. A program that runs
-5 seconds without `sleep()`, or uses its whole time for 30 seconds without ever sleeping longer than one tick,
-is stopped with a message. Program files up to 64 KB, up to 8 images of up to 2 MB each. All of this can be
-changed in [Settings](#settings).
-
 ### Sharing an engine: claim and release
 
-Several Script Boxes and CC computers may touch the same engine. `engine.claim()` gives it to one of them:
+Several Lua Boxes and CC computers may touch the same engine. `engine.claim()` gives it to one of them:
 it returns `true`, or `false` plus who holds it (it never waits). While an engine is claimed, only its holder
 may change it; everyone may still read it (`getText`, `isRunning`, ...). The claim ends with `engine.release()`,
 or by itself when the program ends, fails, is restarted or stopped, its box is broken or unloaded, or the
@@ -211,14 +194,6 @@ max_width=256         # largest wall the wand may mark, up to 512
 max_height=384        # 384 is the full height of the world
 blocks_per_tick=8192  # picture blocks an engine may change per tick
 
-scripts_enabled=true          # Script Boxes allowed at all
-scripts_ops_only=false        # only operators may give boxes files, restart or stop them
-script_ms_per_tick=2          # Lua time per box and tick
-script_max_busy_seconds=5     # stopped after this long without sleep()
-script_too_busy_seconds=30    # stopped after using its whole time this long
-script_max_lua_kb=64
-script_max_images=8
-script_max_image_kb=2048
 ```
 
 An older `billboard.properties` gets the new lines added at the next start; your values stay.
@@ -229,19 +204,24 @@ Lower `blocks_per_tick` if pictures make the server lag.
 ## Command
 
 `/billboard runoff <x y z>` does the same as `runOff()` for the engine at that position.
-`/billboard script <x y z> restart|stop|status` controls a Script Box; `status` also lists its folder and output lines.
-They need operator rights (level 2), so they also work in a command block.
+It needs operator rights (level 2), so it also works in a command block.
 
 ## How this mod is made
 
 Billboard Engine is written by Claude AI (Anthropic), code, textures and icon included.
-The Script Box runs Lua with [Cobalt](https://github.com/cc-tweaked/Cobalt), CC: Tweaked's Lua VM (MIT license),
-packed into the mod; see `THIRD_PARTY_NOTICES.md`.
+The Lua Box and its Lua VM ([Cobalt](https://github.com/cc-tweaked/Cobalt), MIT license) are in [Billboard API](https://github.com/Knito58/Billboard-API).
 Konitor decides what the mod does and tests every version in game.
 
 ## Build and run (Linux)
 
-Requires Java 25.
+Requires Java 25, and Billboard API in your local maven repository until it is released (once, and again after
+it changes):
+
+```
+git clone https://github.com/Knito58/Billboard-API && (cd Billboard-API && ./gradlew publishToMavenLocal)
+```
+
+Then:
 
 ```
 ./gradlew runClient    # start Minecraft 26.3 with the mod
@@ -256,5 +236,5 @@ Then it uploads the jar to CurseForge, with the newest `CHANGELOG.md` section as
 
 In IntelliJ IDEA: *File → Open* the project folder, wait for the Gradle import, then run the
 `Minecraft Client` run configuration.
-Only Fabric API is loaded with the mod in these runs. To test with CC: Tweaked, JEI or other mods,
+Only Fabric API and Billboard API are loaded with the mod in these runs. To test with CC: Tweaked, JEI or other mods,
 put their jar files into `run/mods`.

@@ -13,7 +13,7 @@ import de.knito.billboard.wall.Picture;
 import de.knito.billboard.wall.Wall;
 
 /**
- * The engine functions for programs, shared by the Script Box's Lua and the CC: Tweaked peripheral so both
+ * The engine functions for programs, shared by Billboard API's Lua Box and the CC: Tweaked peripheral so both
  * behave the same. Results that can fail are Lua style: {@code true}, or {@code false} plus a short reason
  * such as "need_wand". Changing calls fail while another controller holds the engine. Main thread only.
  */

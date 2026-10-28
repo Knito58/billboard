@@ -72,6 +72,7 @@ jobs:
             releaseType: "release",
             relations: { projects: [
               { slug: "fabric-api", type: "requiredDependency" },
+              { slug: "billboard-api", type: "requiredDependency" },
               { slug: "cc-tweaked", type: "optionalDependency" }
             ] }
           }' > metadata.json

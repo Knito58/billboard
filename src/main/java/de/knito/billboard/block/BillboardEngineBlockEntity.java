@@ -103,7 +103,7 @@ public class BillboardEngineBlockEntity extends BlockEntity implements ExtendedM
 	private boolean pictureShown;
 	/** Paints and plays the picture; not saved, the wall keeps its last picture after a restart. */
 	private PicturePlayer picture;
-	/** The Script Box or CC computer that claimed the engine; not saved, programs claim again after a restart. */
+	/** The Lua Box or CC computer that claimed the engine; not saved, programs claim again after a restart. */
 	private EngineController controller;
 
 	/** Synced to the open screen: 0 = speed, 1 = 1 while the wall shows text, 2 = 1 while running, 3 = letter size, 4 = 1 while claimed. */

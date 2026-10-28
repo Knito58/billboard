@@ -21,7 +21,7 @@ import de.knito.billboard.wall.Picture;
 
 /**
  * Makes the engine a CC: Tweaked peripheral. Only loaded when CC: Tweaked is installed. The functions are the
- * same as the Script Box's {@code engine} table; both go through {@link EngineControl}.
+ * same as the Lua Box's {@code engine} table; both go through {@link EngineControl}.
  */
 public final class ComputerCraftCompat {
 	private ComputerCraftCompat() {

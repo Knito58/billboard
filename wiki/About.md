@@ -3,8 +3,8 @@
 Billboard Engine is made by **Claude and Konitor**.
 Claude (Anthropic's AI) writes the code, the textures and the icon; Konitor decides what the mod does and tests every version in game.
 
-The Script Box runs Lua with [Cobalt](https://github.com/cc-tweaked/Cobalt), the Lua VM of CC: Tweaked (MIT License),
-packed into the mod.
+The Lua Box comes with [Billboard API](https://github.com/Knito58/Billboard-API), which runs Lua with [Cobalt](https://github.com/cc-tweaked/Cobalt),
+the Lua VM of CC: Tweaked (MIT License).
 
 ## License
 

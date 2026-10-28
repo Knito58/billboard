@@ -1,11 +1,10 @@
 ## On a server
 
-- Install Billboard Engine and Fabric API on the server **and** on every client.
+- Install Billboard Engine, Billboard API and Fabric API on the server **and** on every client.
 - CC: Tweaked is optional. If you use it, it must be on the server and the clients too, as usual.
-- Script Boxes run on the server. Their files live in `world/billboard/scripts/<id>/`; an admin can edit them there
-  and restart them with `/billboard script <x y z> restart`.
-- `scripts_ops_only=true` lets only operators change Script Boxes, `scripts_enabled=false` turns them off.
-  Each box gets at most `script_ms_per_tick` of Lua time per tick, so a bad program can't freeze the server.
+- Lua Boxes run on the server. Their files and settings belong to [Billboard API](https://github.com/Knito58/Billboard-API); an admin restarts a box
+  with `/luabox <x y z> restart`. Each box gets only a small slice of Lua time per tick, so a bad program
+  can't freeze the server.
 - Big pictures are spread over ticks by `blocks_per_tick`. Lower it if a new picture makes the server stutter.
 - Walls in unloaded chunks pause and cost nothing.
 
@@ -30,7 +29,7 @@ Blocks can't be as bright as a screen; pure red is closest to orange concrete. S
 [Pictures and animations](Pictures-and-animations#colors).
 
 **Do I need CC: Tweaked?**
-No. The [Script Box](Script-Box) runs Lua without any other mod. CC: Tweaked is supported if you already use it.
+No. The [Lua Box](Lua-Box) runs Lua without any other mod. CC: Tweaked is supported if you already use it.
 
 **Can the engine show text on a floor or ceiling?**
 No, only on walls standing upright.
@@ -39,7 +38,7 @@ No, only on walls standing upright.
 A Display Link can write into a sign on the engine; see [Sign and pulse](Sign-and-pulse).
 
 **My script stops with "Too long without sleep()" or "Too busy".**
-Every loop needs a `sleep()`. See [When does the program run?](Script-Box#when-does-the-program-run)
+Every loop needs a `sleep()`. See [When does the program run?](Lua-Box#when-does-the-program-run)
 
 **Something else is wrong.**
 Please open an issue: [github.com/Knito58/billboard/issues](https://github.com/Knito58/billboard/issues).

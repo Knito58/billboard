@@ -7,8 +7,8 @@ a picture or an animation, all made of real blocks.
 
 - **Text** in a 5x7 font, 9 sizes, any full block as the pixel, scrolling or standing still.
 - **Pictures and animated GIFs**: every pixel becomes the vanilla block with the closest color.
-- **Lua scripting built in**: the [Script Box](Script-Box) runs your program right in the game. Clocks, slide shows,
-  countdowns. No other mod needed.
+- **Lua scripting**: the [Lua Box](Lua-Box) from [Billboard API](https://github.com/Knito58/Billboard-API) runs your program right in the game. Clocks, slide shows,
+  countdowns. CC: Tweaked is not needed.
 - **Redstone**: a sign and a pulse start a text, and redstone blocks as pixels work like a [punch card](Redstone-punch-card).
 - **CC: Tweaked** works too, if you already use it: the engine is also a ComputerCraft peripheral with the same functions.
 - The wall comes back exactly as it was. While a billboard is shown, nobody can mine its blocks.

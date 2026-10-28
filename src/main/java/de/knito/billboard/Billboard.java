@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.knito.billboard.compat.ComputerCraftCompat;
+import de.knito.billboard.compat.EngineLuaClient;
 import de.knito.billboard.net.ModNetworking;
 import de.knito.billboard.wall.BlockColors;
 import de.knito.billboard.wall.WallProtection;
@@ -30,6 +31,7 @@ public class Billboard implements ModInitializer {
 		ModNetworking.initialize();
 		WallProtection.initialize();
 		BillboardCommand.initialize();
+		EngineLuaClient.initialize();
 		// Picture blocks depend on block tags, so look again after a start or /reload.
 		ServerLifecycleEvents.SERVER_STARTED.register(server -> BlockColors.invalidate());
 		ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server, resources, success) -> BlockColors.invalidate());

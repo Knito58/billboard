@@ -1,4 +1,4 @@
-All examples are written for the [Script Box](Script-Box). For CC: Tweaked add
+All examples are written for the [Lua Box](Lua-Box). For CC: Tweaked add
 `local engine = peripheral.find("billboard_engine")` at the top
 (and see the note at [Picture slide show](#picture-slide-show)).
 

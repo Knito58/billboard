@@ -1,4 +1,4 @@
-These functions are the same in the [Script Box](Script-Box) (`engine.xxx`) and in
+These functions are the same in the [Lua Box](Lua-Box) (`engine.xxx`) and in
 [CC: Tweaked](Two-ways-to-script) (`local engine = peripheral.find("billboard_engine")`).
 The only difference is the first argument of `drawImage`.
 
@@ -40,7 +40,7 @@ To place a text at the right end: it is `(6 * #text - 1) * size` columns wide, s
 
 | Function | Does | Returns |
 | --- | --- | --- |
-| `drawImage(name, options)` | **Script Box**: shows the image file of that name from the box's folder. | `true`, or `false` + reason |
+| `drawImage(name, options)` | **Lua Box**: shows the image file of that name from the box's folder. | `true`, or `false` + reason |
 | `drawImage(data, options)` | **CC: Tweaked**: shows an image from its bytes (read from a file in binary mode, or from `http.get(url, nil, true)`). | `true`, or `false` + reason |
 | `drawPixels(x, y, w, h, data)` | Draws a rectangle of pixels made by your program. `x`, `y` from 1 at the top left. `data` = 3 bytes per pixel (red, green, blue) or 4 (plus alpha; below 128 keeps the wall's own block), row by row. | `true`, or `false` + reason |
 | `isPainting()` | | `true` until the picture (or the first frame of an animation) is completely on the wall |
@@ -85,7 +85,10 @@ Details: [Sharing an engine](Sharing-an-engine).
 | `not_running` | `stop()` with nothing moving. |
 | `nothing_to_restore` | `restore()` with nothing shown. |
 
-## Only in the Script Box
+## Only in the Lua Box
+
+The Lua Box also has `network` (other machines it reaches), `files` (its own files) and `require` (more `.lua`
+files), see [Billboard API](https://github.com/Knito58/Billboard-API).
 
 `sleep(seconds)`, `print(...)` (to the box's output lines), `os.time()`, `os.date(format)`, `os.clock()`,
 `os.day()`, `os.epoch()`, `textutils.formatTime(time, twentyFour)`, as in CC: Tweaked.

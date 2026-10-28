@@ -13,7 +13,7 @@
 
 **Scripting**
 - [Two ways to script](Two-ways-to-script)
-- [Script Box](Script-Box)
+- [Lua Box](Lua-Box)
 - [Lua reference](Lua-reference)
 - [Pictures and animations](Pictures-and-animations)
 - [Sharing an engine](Sharing-an-engine)
