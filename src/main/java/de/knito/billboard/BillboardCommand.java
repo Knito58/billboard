@@ -27,7 +27,7 @@ public final class BillboardCommand {
 						.requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
 						.then(Commands.literal("runoff")
 								.then(Commands.argument("engine", BlockPosArgument.blockPos())
-										.executes(BillboardCommand::runOff))));
+										.executes(BillboardCommand::runOff)))));
 	}
 
 	private static int runOff(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
