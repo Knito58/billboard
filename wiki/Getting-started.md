@@ -1,10 +1,17 @@
 ## Install
 
 1. Install [Fabric Loader](https://fabricmc.net/use/) 0.19.5 or newer for Minecraft 26.3. Minecraft 26.3 needs Java 25.
-2. Put the Billboard Engine jar, [Billboard API](https://github.com/Knito58/Billboard-API) and [Fabric API](https://modrinth.com/mod/fabric-api) into the `mods` folder.
-3. On a server: install all three on the server **and** on every client.
+2. Put the Billboard Engine jar and [Fabric API](https://modrinth.com/mod/fabric-api) into the `mods` folder.
+3. On a server: install both on the server **and** on every client.
 
-[CC: Tweaked](https://modrinth.com/mod/cc-tweaked) is optional. Everything except the ComputerCraft peripheral works without it.
+Two extra mods are optional. Text, scrolling, letter sizes, the sign and the redstone punch card work without them.
+
+- [Billboard API](https://github.com/Knito58/Billboard-API): the [Lua Box](Lua-Box) and Data Pipes, for pictures,
+  clocks and slide shows from a Lua program.
+- [CC: Tweaked](https://modrinth.com/mod/cc-tweaked): the engine as a ComputerCraft peripheral.
+
+Coming from Billboard Engine 1.x with Script Boxes in your world? Install Billboard API **before** you open the world,
+or the Script Boxes are gone.
 
 ## Recipes
 

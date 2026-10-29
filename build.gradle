@@ -49,7 +49,7 @@ loom {
 }
 
 // Only Fabric API runs with the mod in IDEA and runClient/runServer. Other mods for testing
-// (CC: Tweaked, JEI, ...) go as jar files into run/mods; the ones below are compiled against only.
+// (Billboard API, CC: Tweaked, JEI, ...) go as jar files into run/mods; the ones below are compiled against only.
 dependencies {
 	// To change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -58,9 +58,9 @@ dependencies {
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
-	// Billboard API: the Lua Box talks to the engine through its Lua client registry. A separate
-	// download, not packed into our jar.
-	implementation "de.knito.billboard.api:billboard-api:${project.billboard_api_version}"
+	// Billboard API is optional too: the Lua Box talks to the engine through its Lua client registry.
+	// Compiled against only, so test runs are without it unless its jar is in run/mods.
+	compileOnly "de.knito.billboard.api:billboard-api:${project.billboard_api_version}"
 
 	// CC: Tweaked is optional: compiled against, but not needed at runtime.
 	compileOnly("cc.tweaked:cc-tweaked-${project.minecraft_version}-core-api:${project.cc_tweaked_version}") { transitive = false }

@@ -55,25 +55,37 @@ jobs:
               if l.startswith("* What went wrong:"):
                   print("::error title=Gradle::" + esc("\n".join(lines[i + 1:i + 10])[:900]))
           PY
-      - name: start a server to check the mod's data files
+      - name: start a server to check the mod's data files, without and with Billboard API
         # Recipes, advancements etc. are only checked when a world loads, not by the build.
+        # Billboard API is optional, so the engine must start alone and together with it.
         run: |
           mkdir -p run && echo "eula=true" > run/eula.txt
-          ./gradlew runServer --no-daemon > server.log 2>&1 &
-          for i in $(seq 1 120); do
+          for pass in without with; do
+            if [ "$pass" = with ]; then
+              rm -rf run/world
+              mkdir -p run/mods && cp build/api/billboard-api-*.jar run/mods/
+            fi
+            ./gradlew runServer --no-daemon > server-$pass.log 2>&1 &
+            for i in $(seq 1 120); do
+              sleep 5
+              if grep -qE "Done \(|Failed to load datapacks|Failed to load registries|Exception in server tick|agree to the EULA" server-$pass.log; then break; fi
+            done
+            pkill -f runServer || true
+            pkill java || true
             sleep 5
-            if grep -qE "Done \(|Failed to load datapacks|Failed to load registries|Exception in server tick|agree to the EULA" server.log; then break; fi
+            if ! grep -q "Done (" server-$pass.log; then
+              grep -nE -A20 "ERROR|Failed" server-$pass.log | head -150
+              echo "::error::The server did not start with the mod loaded ($pass Billboard API)"
+              exit 1
+            fi
+            if [ "$pass" = with ] && ! grep -q "Billboard API found" server-$pass.log; then
+              echo "::error::Billboard API was in run/mods but the engine did not register with it"
+              exit 1
+            fi
+            # Warnings about the mod's data (e.g. a loot table the game rejected) don't stop the server
+            grep -iE "billboard" server-$pass.log | grep -iE "warn|error|fail|invalid|validation" | head -20 | sed "s/^/::warning title=Server log ($pass API)::/" || true
+            echo "Server started fine $pass Billboard API"
           done
-          pkill -f runServer || true
-          pkill java || true
-          if ! grep -q "Done (" server.log; then
-            grep -nE -A20 "ERROR|Failed" server.log | head -150
-            echo "::error::The server did not start with the mod loaded"
-            exit 1
-          fi
-          # Warnings about the mod's data (e.g. a loot table the game rejected) don't stop the server
-          grep -iE "billboard" server.log | grep -iE "warn|error|fail|invalid|validation" | head -20 | sed 's/^/::warning title=Server log::/' || true
-          echo "Server started fine"
       - name: capture build artifacts
         uses: actions/upload-artifact@v7
         with:

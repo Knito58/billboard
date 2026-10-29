@@ -32,10 +32,10 @@
 		"fabricloader": ">=0.19.5",
 		"minecraft": "~26.3",
 		"java": ">=25",
-		"fabric-api": "*",
-		"billboard_api": ">=0.1.0"
+		"fabric-api": "*"
 	},
 	"suggests": {
+		"billboard_api": ">=0.1.0",
 		"computercraft": "*",
 		"jei": "*",
 		"roughlyenoughitems": "*"
