@@ -18,6 +18,8 @@ removed from the world when it loads (their files stay in `<world>/billboard/scr
 - The engine is a Lua client of type `billboard:engine`. A box reaches it by touching it or through Data Pipes.
   `engine` in a program is the one engine the box reaches; with several, use `network.findByName(name)`.
   All engine functions are unchanged, `drawImage(name)` takes an image from the calling box's files.
+- Text from a Lua Box: `"\183"` is still the middle dot, as in CC and the Script Box. A `·` typed into a UTF-8 file
+  works as well.
 - Worlds from 1.x: Script Boxes become Lua Boxes and keep their files; the program is renamed to `main.lua`.
 - `/billboard script` is gone, use `/luabox <pos> restart|stop|status`.
 - The `script*` settings are no longer read from `config/billboard.properties`; Billboard API takes them over into

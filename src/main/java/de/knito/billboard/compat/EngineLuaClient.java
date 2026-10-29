@@ -1,6 +1,10 @@
 package de.knito.billboard.compat;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.CodingErrorAction;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
@@ -79,7 +83,7 @@ public final class EngineLuaClient implements LuaClient {
 	public void methods(LuaMethods m) {
 		add(m, "getText", (c, a) -> c.getText());
 		add(m, "setText", (c, a) -> {
-			c.setText(a.string(1));
+			c.setText(text(a, 1));
 			return null;
 		});
 		add(m, "getSpeed", (c, a) -> c.getSpeed());
@@ -100,7 +104,7 @@ public final class EngineLuaClient implements LuaClient {
 		add(m, "isRunning", (c, a) -> c.isRunning());
 		add(m, "isShowing", (c, a) -> c.isShowing());
 		add(m, "go", (c, a) -> c.go(a.isNil(1) ? null : a.integer(1)));
-		add(m, "show", (c, a) -> c.show(a.string(1)));
+		add(m, "show", (c, a) -> c.show(text(a, 1)));
 		add(m, "runOff", (c, a) -> c.runOff());
 		add(m, "isRunningOff", (c, a) -> c.isRunningOff());
 		add(m, "stop", (c, a) -> c.stop());
@@ -183,6 +187,23 @@ public final class EngineLuaClient implements LuaClient {
 				throw new CompletionException(new LuaException(e.getMessage()));
 			}
 		}, server);
+	}
+
+	/**
+	 * Text for the wall. Billboard API reads Lua strings as UTF-8, but "\183" (the middle dot) is a single byte
+	 * that is no valid UTF-8, as in CC: Tweaked and the old Script Box. So text that is not valid UTF-8 is read as
+	 * Latin-1, like there; a "·" typed into a UTF-8 file still works too.
+	 */
+	private static String text(LuaArgs args, int index) throws LuaException {
+		byte[] bytes = args.bytes(index);
+		try {
+			return StandardCharsets.UTF_8.newDecoder()
+					.onMalformedInput(CodingErrorAction.REPORT)
+					.onUnmappableCharacter(CodingErrorAction.REPORT)
+					.decode(ByteBuffer.wrap(bytes)).toString();
+		} catch (CharacterCodingException e) {
+			return new String(bytes, StandardCharsets.ISO_8859_1);
+		}
 	}
 
 	/** Lua's idea of true: anything but nil and false. */
