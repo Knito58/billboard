@@ -80,13 +80,25 @@ in the box's folder instead of the file's bytes.
 Worlds from 1.x: Script Boxes become Lua Boxes and keep their files; the program is renamed to `main.lua`.
 `/billboard script` is now `/luabox`, and the Script Box settings move to `config/billboard_api.properties`.
 
-A clock in four lines:
+A real time clock:
 
 ```lua
 engine.claim()
 while true do
-  engine.show(os.date("%H:%M"))      -- or textutils.formatTime(os.time(), true) for Minecraft time
+  engine.show(os.date("%H:%M"))      -- real time of the server
   sleep(1)
+end
+```
+
+A game time clock. `os.time()` gives the Minecraft time as hours with a fraction (`14.5` = 14:30), so it needs
+`textutils.formatTime(time, true)` to become `14:30` (without `true`: `2:30 PM`). A Minecraft minute lasts less than
+a real second, so this one looks twice a second:
+
+```lua
+engine.claim()
+while true do
+  engine.show(textutils.formatTime(os.time(), true))
+  sleep(0.5)
 end
 ```
 

@@ -6,8 +6,10 @@ All examples are written for the [Lua Box](Lua-Box). For CC: Tweaked add
 
 ![A station clock at dusk showing 23:24 in white blocks](images/07-station-clock.jpg)
 
-Real time of the server, standing still at the left edge. `show()` does not redraw the same text,
-so calling it every second costs nothing.
+### A real time clock
+
+The real time of the computer the world runs on (the server), standing still at the left edge.
+`show()` does not redraw the same text, so calling it every second costs nothing.
 
 ```lua
 engine.claim()
@@ -17,7 +19,19 @@ while true do
 end
 ```
 
-Minecraft time instead: `engine.show(textutils.formatTime(os.time(), true))`.
+### A game time clock
+
+`os.time()` gives the Minecraft time of day as hours with a fraction, for example `14.5` for 14:30,
+so it needs formatting: `textutils.formatTime(time, true)` turns it into `14:30` (leave out `true` for `2:30 PM`).
+A Minecraft minute lasts less than a real second (a day is 20 minutes), so this clock looks twice a second.
+
+```lua
+engine.claim()
+while true do
+  engine.show(textutils.formatTime(os.time(), true))
+  sleep(0.5)
+end
+```
 
 ## Changing messages
 
