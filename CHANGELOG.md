@@ -1,17 +1,25 @@
 ## Billboard Engine 2.0.0 for Minecraft 26.3 (Fabric)
 
 **Install:** put `billboard-2.0.0.jar` into the `mods` folder, together with
-[Billboard API](https://github.com/Knito58/Billboard-API) 0.1.0 or newer and [Fabric API](https://modrinth.com/mod/fabric-api).
-Needs Fabric Loader 0.19.5 or newer and Java 25. [CC: Tweaked](https://modrinth.com/mod/cc-tweaked) stays optional.
+[Fabric API](https://modrinth.com/mod/fabric-api). Needs Fabric Loader 0.19.5 or newer and Java 25.
+Optional: [Billboard API](https://github.com/Knito58/Billboard-API) 0.1.0 or newer for Lua, and
+[CC: Tweaked](https://modrinth.com/mod/cc-tweaked).
+
+**Worlds with Script Boxes from 1.x: install Billboard API before you open them.** Without it the Script Boxes are
+removed from the world when it loads (their files stay in `<world>/billboard/scripts/`, the blocks don't come back).
 
 ### The Script Box moved to Billboard API
 
-- The Script Box is now the **Lua Box** of Billboard API, a separate mod that Billboard Engine needs. Same recipe.
+- The Script Box is now the **Lua Box** of Billboard API, a separate, optional mod. Same recipe.
+  Without Billboard API the engine works by hand as always: wand, text, scrolling, letter sizes, sign and redstone
+  pulse, redstone punch card, and CC: Tweaked computers. Pictures and clocks need a Lua Box or a CC computer.
   Billboard API also brings Data Pipes, other machines to drive (signs, the Typestones typewriter), `main.lua` plus
   modules for `require`, and a Network view in the box's screen.
 - The engine is a Lua client of type `billboard:engine`. A box reaches it by touching it or through Data Pipes.
   `engine` in a program is the one engine the box reaches; with several, use `network.findByName(name)`.
   All engine functions are unchanged, `drawImage(name)` takes an image from the calling box's files.
+- Text from a Lua Box: `"\183"` is still the middle dot, as in CC and the Script Box. A `·` typed into a UTF-8 file
+  works as well.
 - Worlds from 1.x: Script Boxes become Lua Boxes and keep their files; the program is renamed to `main.lua`.
 - `/billboard script` is gone, use `/luabox <pos> restart|stop|status`.
 - The `script*` settings are no longer read from `config/billboard.properties`; Billboard API takes them over into

@@ -1,5 +1,5 @@
 The **Lua Box** runs one Lua program that drives the engine. Since Billboard Engine 2.0 it comes with
-[Billboard API](https://github.com/Knito58/Billboard-API), a separate mod that Billboard Engine needs. The box, its screen and its settings are described there;
+[Billboard API](https://github.com/Knito58/Billboard-API), an optional extra mod: put its jar into the `mods` folder when you want Lua. The box, its screen and its settings are described there;
 this page is about the engine side.
 
 ![The Lua Box screen: files, output and the Restart and Stop buttons](images/06-script-box.jpg)
@@ -28,6 +28,9 @@ this page is about the engine side.
 Script Boxes become Lua Boxes. Each keeps its files, and its program is renamed to `main.lua`. Old programs that use
 `engine` run as before. `/billboard script` is now `/luabox <x y z> restart|stop|status`, and the Script Box
 settings moved from `billboard.properties` to `billboard_api.properties` (taken over at the first start).
+
+This only happens with Billboard API installed. Open such a world without it and the Script Boxes are removed from
+the world; their files stay in `<world>/billboard/scripts/`, but the blocks don't come back.
 
 ## A first program
 

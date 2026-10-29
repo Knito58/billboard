@@ -1,6 +1,7 @@
 ## On a server
 
-- Install Billboard Engine, Billboard API and Fabric API on the server **and** on every client.
+- Install Billboard Engine and Fabric API on the server **and** on every client.
+- Billboard API (Lua Box, Data Pipes) is optional. If you use it, it must be on the server and the clients too.
 - CC: Tweaked is optional. If you use it, it must be on the server and the clients too, as usual.
 - Lua Boxes run on the server. Their files and settings belong to [Billboard API](https://github.com/Knito58/Billboard-API); an admin restarts a box
   with `/luabox <x y z> restart`. Each box gets only a small slice of Lua time per tick, so a bad program

@@ -31,13 +31,18 @@ public class Billboard implements ModInitializer {
 		ModNetworking.initialize();
 		WallProtection.initialize();
 		BillboardCommand.initialize();
-		EngineLuaClient.initialize();
 		// Picture blocks depend on block tags, so look again after a start or /reload.
 		ServerLifecycleEvents.SERVER_STARTED.register(server -> BlockColors.invalidate());
 		ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server, resources, success) -> BlockColors.invalidate());
 		if (FabricLoader.getInstance().isModLoaded("computercraft")) {
 			ComputerCraftCompat.initialize();
 			LOGGER.info("CC: Tweaked found, the engine is a peripheral");
+		}
+		// Billboard API is optional: without it the engine works by hand, sign, redstone and CC.
+		// EngineLuaClient is the only class that touches the API, so it must not load without it.
+		if (FabricLoader.getInstance().isModLoaded("billboard_api")) {
+			EngineLuaClient.initialize();
+			LOGGER.info("Billboard API found, Lua Boxes can drive the engine");
 		}
 
 		LOGGER.info("Billboard loaded");

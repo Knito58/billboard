@@ -10,8 +10,15 @@ The wiki pages live in the `wiki/` folder and are copied to the Wiki tab on ever
 ## Install
 
 Download the jar from [Releases](https://github.com/Knito58/billboard/releases) and put it into the `mods` folder
-together with [Billboard API](https://github.com/Knito58/Billboard-API) and [Fabric API](https://modrinth.com/mod/fabric-api). Minecraft 26.3, Fabric Loader 0.19.5+, Java 25.
-On a server, install it on the server and on every client. [CC: Tweaked](https://modrinth.com/mod/cc-tweaked) is optional.
+together with [Fabric API](https://modrinth.com/mod/fabric-api). Minecraft 26.3, Fabric Loader 0.19.5+, Java 25.
+On a server, install it on the server and on every client.
+
+Optional: [Billboard API](https://github.com/Knito58/Billboard-API) for the Lua Box (pictures, clocks, slide shows from
+a Lua program) and Data Pipes, and [CC: Tweaked](https://modrinth.com/mod/cc-tweaked) for ComputerCraft computers.
+Without them the engine works by hand: wand, text, scrolling, letter sizes, sign and redstone pulse, redstone punch card.
+
+**Coming from 1.x with Script Boxes in your world?** Install Billboard API *before* you open the world, or the Script
+Boxes are gone (their files stay in `<world>/billboard/scripts/`, but the blocks don't come back).
 
 ## How to use
 
@@ -55,9 +62,9 @@ That also works with Create's Display Link, which can write into vanilla signs.
 A pulse while the same text is already running changes nothing. Speed, size, Stop and Restore stay in the GUI.
 Wax the sign with a honeycomb so nobody can edit it by accident; the engine still reads it.
 
-## Lua Box (Lua, comes with Billboard API)
+## Lua Box (optional, comes with Billboard API)
 
-Since 2.0 the Lua Box (the former Script Box) is part of [Billboard API](https://github.com/Knito58/Billboard-API), which Billboard Engine needs. Its screen, files,
+Since 2.0 the Lua Box (the former Script Box) is part of [Billboard API](https://github.com/Knito58/Billboard-API), an optional extra mod. Its screen, files,
 limits and settings are described there. Craft it like the engine, with paper in the middle instead of the glass
 pane (4 iron, 4 redstone, 1 paper), and place it against the engine, or join box and engine with Data Pipes.
 The program is `main.lua`; images for `drawImage` are dropped onto the box as well.
@@ -73,13 +80,25 @@ in the box's folder instead of the file's bytes.
 Worlds from 1.x: Script Boxes become Lua Boxes and keep their files; the program is renamed to `main.lua`.
 `/billboard script` is now `/luabox`, and the Script Box settings move to `config/billboard_api.properties`.
 
-A clock in four lines:
+A real time clock:
 
 ```lua
 engine.claim()
 while true do
-  engine.show(os.date("%H:%M"))      -- or textutils.formatTime(os.time(), true) for Minecraft time
+  engine.show(os.date("%H:%M"))      -- real time of the server
   sleep(1)
+end
+```
+
+A game time clock. `os.time()` gives the Minecraft time as hours with a fraction (`14.5` = 14:30), so it needs
+`textutils.formatTime(time, true)` to become `14:30` (without `true`: `2:30 PM`). A Minecraft minute lasts less than
+a real second, so this one looks twice a second:
+
+```lua
+engine.claim()
+while true do
+  engine.show(textutils.formatTime(os.time(), true))
+  sleep(0.5)
 end
 ```
 
@@ -214,14 +233,8 @@ Konitor decides what the mod does and tests every version in game.
 
 ## Build and run (Linux)
 
-Requires Java 25, and Billboard API in your local maven repository until it is released (once, and again after
-it changes):
-
-```
-git clone https://github.com/Knito58/Billboard-API && (cd Billboard-API && ./gradlew publishToMavenLocal)
-```
-
-Then:
+Requires Java 25. Gradle downloads the Billboard API release named in `gradle.properties` to compile against;
+it is not loaded in test runs unless you put its jar into `run/mods`.
 
 ```
 ./gradlew runClient    # start Minecraft 26.3 with the mod
@@ -236,5 +249,5 @@ Then it uploads the jar to CurseForge, with the newest `CHANGELOG.md` section as
 
 In IntelliJ IDEA: *File → Open* the project folder, wait for the Gradle import, then run the
 `Minecraft Client` run configuration.
-Only Fabric API and Billboard API are loaded with the mod in these runs. To test with CC: Tweaked, JEI or other mods,
-put their jar files into `run/mods`.
+Only Fabric API is loaded with the mod in these runs. To test with Billboard API, CC: Tweaked, JEI or other mods,
+put their jar files into `run/mods` (Billboard API: the jar from its [releases](https://github.com/Knito58/Billboard-API/releases)).

@@ -28,3 +28,5 @@ Or just look first: the [Gallery](Gallery).
 
 Needs [Fabric API](https://modrinth.com/mod/fabric-api), Fabric Loader 0.19.5 or newer and Java 25.
 On a server, install it on the server and on every client.
+Optional: [Billboard API](https://github.com/Knito58/Billboard-API) for the [Lua Box](Lua-Box) and Data Pipes,
+[CC: Tweaked](https://modrinth.com/mod/cc-tweaked) for ComputerCraft computers.

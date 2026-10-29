@@ -34,12 +34,6 @@ jobs:
             echo "Tag $GITHUB_REF_NAME does not match version=$version in gradle.properties"
             exit 1
           fi
-      - name: Build Billboard API into the local maven repository
-        # Billboard API is not on a public maven yet; build the branch or tag named in gradle.properties.
-        run: |
-          ref=$(grep '^billboard_api_ref=' gradle.properties | cut -d= -f2)
-          git clone --depth 1 --branch "$ref" https://github.com/Knito58/Billboard-API.git ../billboard-api
-          (cd ../billboard-api && chmod +x ./gradlew && ./gradlew publishToMavenLocal --no-daemon)
       - name: Build
         run: ./gradlew build --no-configuration-cache
       - uses: softprops/action-gh-release@v2

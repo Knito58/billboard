@@ -21,14 +21,11 @@ jobs:
           distribution: 'microsoft'
       - name: make gradle wrapper executable
         run: chmod +x ./gradlew
-      - name: build Billboard API into the local maven repository
-        # Billboard API is not on a public maven yet; build the branch or tag named in gradle.properties.
+      - name: download the Billboard API release for the server test
         run: |
-          ref=$(grep '^billboard_api_ref=' gradle.properties | cut -d= -f2)
-          git clone --depth 1 --branch "$ref" https://github.com/Knito58/Billboard-API.git ../billboard-api
-          (cd ../billboard-api && chmod +x ./gradlew && ./gradlew publishToMavenLocal --no-daemon)
-          mkdir -p build/api && cp ../billboard-api/build/libs/billboard-api-*.jar build/api/
-          rm -f build/api/*-sources.jar
+          v=$(grep '^billboard_api_version=' gradle.properties | cut -d= -f2)
+          mkdir -p build/api
+          curl -sSfL -o "build/api/billboard-api-$v.jar" "https://github.com/Knito58/Billboard-API/releases/download/v$v/billboard-api-$v.jar"
       - name: build
         run: |
           set -o pipefail
@@ -55,30 +52,42 @@ jobs:
               if l.startswith("* What went wrong:"):
                   print("::error title=Gradle::" + esc("\n".join(lines[i + 1:i + 10])[:900]))
           PY
-      - name: start a server to check the mod's data files
+      - name: start a server to check the mod's data files, without and with Billboard API
         # Recipes, advancements etc. are only checked when a world loads, not by the build.
+        # Billboard API is optional, so the engine must start alone and together with it.
         run: |
           mkdir -p run && echo "eula=true" > run/eula.txt
-          ./gradlew runServer --no-daemon > server.log 2>&1 &
-          for i in $(seq 1 120); do
+          for pass in without with; do
+            if [ "$pass" = with ]; then
+              rm -rf run/world
+              mkdir -p run/mods && cp build/api/billboard-api-*.jar run/mods/
+            fi
+            ./gradlew runServer --no-daemon > server-$pass.log 2>&1 &
+            for i in $(seq 1 120); do
+              sleep 5
+              if grep -qE "Done \(|Failed to load datapacks|Failed to load registries|Exception in server tick|agree to the EULA" server-$pass.log; then break; fi
+            done
+            pkill -f runServer || true
+            pkill java || true
             sleep 5
-            if grep -qE "Done \(|Failed to load datapacks|Failed to load registries|Exception in server tick|agree to the EULA" server.log; then break; fi
+            if ! grep -q "Done (" server-$pass.log; then
+              grep -nE -A20 "ERROR|Failed" server-$pass.log | head -150
+              echo "::error::The server did not start with the mod loaded ($pass Billboard API)"
+              exit 1
+            fi
+            if [ "$pass" = with ] && ! grep -q "Billboard API found" server-$pass.log; then
+              echo "::error::Billboard API was in run/mods but the engine did not register with it"
+              exit 1
+            fi
+            # Warnings about the mod's data (e.g. a loot table the game rejected) don't stop the server
+            grep -iE "billboard" server-$pass.log | grep -iE "warn|error|fail|invalid|validation" | head -20 | sed "s/^/::warning title=Server log ($pass API)::/" || true
+            echo "Server started fine $pass Billboard API"
           done
-          pkill -f runServer || true
-          pkill java || true
-          if ! grep -q "Done (" server.log; then
-            grep -nE -A20 "ERROR|Failed" server.log | head -150
-            echo "::error::The server did not start with the mod loaded"
-            exit 1
-          fi
-          # Warnings about the mod's data (e.g. a loot table the game rejected) don't stop the server
-          grep -iE "billboard" server.log | grep -iE "warn|error|fail|invalid|validation" | head -20 | sed 's/^/::warning title=Server log::/' || true
-          echo "Server started fine"
       - name: capture build artifacts
         uses: actions/upload-artifact@v7
         with:
           name: Artifacts
-          # The engine jar and the Billboard API jar it was built against, ready for a mods folder
+          # The engine jar and the Billboard API jar it was tested with, ready for a mods folder
           path: |
             build/libs/
             build/api/
