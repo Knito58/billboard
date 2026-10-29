@@ -221,14 +221,8 @@ Konitor decides what the mod does and tests every version in game.
 
 ## Build and run (Linux)
 
-Requires Java 25. The engine is compiled against Billboard API, so it must be in your local maven repository
-until it is on a public maven (once, and again after it changes):
-
-```
-git clone https://github.com/Knito58/Billboard-API && (cd Billboard-API && ./gradlew publishToMavenLocal)
-```
-
-Then:
+Requires Java 25. Gradle downloads the Billboard API release named in `gradle.properties` to compile against;
+it is not loaded in test runs unless you put its jar into `run/mods`.
 
 ```
 ./gradlew runClient    # start Minecraft 26.3 with the mod
@@ -244,4 +238,4 @@ Then it uploads the jar to CurseForge, with the newest `CHANGELOG.md` section as
 In IntelliJ IDEA: *File → Open* the project folder, wait for the Gradle import, then run the
 `Minecraft Client` run configuration.
 Only Fabric API is loaded with the mod in these runs. To test with Billboard API, CC: Tweaked, JEI or other mods,
-put their jar files into `run/mods` (for Billboard API: `Billboard-API/build/libs/billboard-api-<version>.jar`).
+put their jar files into `run/mods` (Billboard API: the jar from its [releases](https://github.com/Knito58/Billboard-API/releases)).

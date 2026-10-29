@@ -21,14 +21,11 @@ jobs:
           distribution: 'microsoft'
       - name: make gradle wrapper executable
         run: chmod +x ./gradlew
-      - name: build Billboard API into the local maven repository
-        # Billboard API is not on a public maven yet; build the branch or tag named in gradle.properties.
+      - name: download the Billboard API release for the server test
         run: |
-          ref=$(grep '^billboard_api_ref=' gradle.properties | cut -d= -f2)
-          git clone --depth 1 --branch "$ref" https://github.com/Knito58/Billboard-API.git ../billboard-api
-          (cd ../billboard-api && chmod +x ./gradlew && ./gradlew publishToMavenLocal --no-daemon)
-          mkdir -p build/api && cp ../billboard-api/build/libs/billboard-api-*.jar build/api/
-          rm -f build/api/*-sources.jar
+          v=$(grep '^billboard_api_version=' gradle.properties | cut -d= -f2)
+          mkdir -p build/api
+          curl -sSfL -o "build/api/billboard-api-$v.jar" "https://github.com/Knito58/Billboard-API/releases/download/v$v/billboard-api-$v.jar"
       - name: build
         run: |
           set -o pipefail
@@ -90,7 +87,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: Artifacts
-          # The engine jar and the Billboard API jar it was built against, ready for a mods folder
+          # The engine jar and the Billboard API jar it was tested with, ready for a mods folder
           path: |
             build/libs/
             build/api/

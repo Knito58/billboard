@@ -4,11 +4,21 @@ plugins {
 }
 
 repositories {
-	// Billboard API (the Lua Box and its network) until it is on a public maven. CI builds it
-	// from Knito58/Billboard-API with publishToMavenLocal first, see .github/workflows/build.yml.
-	mavenLocal {
-		content {
-			includeGroup("de.knito.billboard.api")
+	// Billboard API (the Lua Box and its network) is not on a maven; take the jar of its GitHub release.
+	exclusiveContent {
+		forRepository {
+			ivy {
+				url = "https://github.com/Knito58/Billboard-API/releases/download"
+				patternLayout {
+					artifact "v[revision]/[artifact]-[revision].[ext]"
+				}
+				metadataSources {
+					artifact()
+				}
+			}
+		}
+		filter {
+			includeModule("de.knito.billboard.api", "billboard-api")
 		}
 	}
 	// Add repositories to retrieve artifacts from in here.
