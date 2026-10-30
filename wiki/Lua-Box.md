@@ -20,8 +20,8 @@ this page is about the engine side.
   `network.find("billboard:engine")` or name them in the box's Network view and use `network.findByName(name)`.
 - Every function in the [Lua reference](Lua-reference) works on `engine` and on such a handle.
 - `engine.claim()` makes this box the only one allowed to change the engine: see [Sharing an engine](Sharing-an-engine).
-- By default a box drives only engines placed by the same player (`network_owner_check` in
-  `config/billboard_api.properties`).
+- A box drives any engine it reaches. With `network_owner_check=true` in `config/billboard_api.properties`, a box
+  drives only engines placed by the same player.
 
 ## Worlds from Billboard Engine 1.x
 

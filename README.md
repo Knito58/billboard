@@ -70,8 +70,8 @@ pane (4 iron, 4 redstone, 1 paper), and place it against the engine, or join box
 The program is `main.lua`; images for `drawImage` are dropped onto the box as well.
 
 `engine` is the one Billboard Engine the box reaches. With several engines, name them in the box's Network view and use
-`network.findByName(name)`, or `network.find("billboard:engine")`. By default a box drives only engines placed by the
-same player.
+`network.findByName(name)`, or `network.find("billboard:engine")`. A box drives any engine it reaches; with
+`network_owner_check=true` in Billboard API's config it drives only engines placed by the same player.
 
 `engine` has the same functions as the ComputerCraft peripheral below, so a CC script runs after
 replacing `peripheral.find("billboard_engine")` with `engine`. Only `drawImage` takes the name of an image
