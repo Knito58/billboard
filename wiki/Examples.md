@@ -22,13 +22,17 @@ end
 ### A game time clock
 
 `os.time()` gives the Minecraft time of day as hours with a fraction, for example `14.5` for 14:30,
-so it needs formatting: `textutils.formatTime(time, true)` turns it into `14:30` (leave out `true` for `2:30 PM`).
+so it needs formatting. `textutils.formatTime(time, true)` gives `9:05` before ten o'clock, one digit less, so the
+clock would change its width. `string.format("%02d:%02d", hour, minute)` always writes two digits: `09:05`.
 A Minecraft minute lasts less than a real second (a day is 20 minutes), so this clock looks twice a second.
 
 ```lua
 engine.claim()
 while true do
-  engine.show(textutils.formatTime(os.time(), true))
+  local t = os.time()                             -- 14.5 means 14:30
+  local h = math.floor(t)
+  local m = math.floor((t - h) * 60)
+  engine.show(string.format("%02d:%02d", h, m))   -- "09:05", not "9:05"
   sleep(0.5)
 end
 ```
