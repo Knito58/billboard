@@ -1,8 +1,10 @@
 package de.knito.billboard.wall;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionResult;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLevelEvents;
+import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 
@@ -22,6 +24,13 @@ public final class WallProtection {
 				return false;
 			}
 			return true;
+		});
+		// Billboard blocks are unbreakable, so survival mining never gets as far as the break event above: tell the player at the first hit.
+		AttackBlockCallback.EVENT.register((player, level, hand, pos, direction) -> {
+			if (!level.isClientSide() && !player.isCreative() && ProtectedAreas.isProtected(level, pos)) {
+				player.sendOverlayMessage(Component.translatable("message.billboard.protected"));
+			}
+			return InteractionResult.PASS;
 		});
 	}
 }

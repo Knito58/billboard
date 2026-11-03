@@ -1,3 +1,21 @@
+## Billboard Engine 2.0.1 for Minecraft 26.3 (Fabric)
+
+**Install:** put `billboard-2.0.1.jar` into the `mods` folder, together with
+[Fabric API](https://modrinth.com/mod/fabric-api). Needs Fabric Loader 0.19.5 or newer and Java 25.
+Optional: [Billboard API](https://github.com/Knito58/Billboard-API) 0.1.0 or newer for Lua, and
+[CC: Tweaked](https://modrinth.com/mod/cc-tweaked).
+
+### Fixed: endless blocks from a billboard wall
+
+- Vein miners such as Liteminer, 3x3 hammers, drills and quarries could take items from a shown wall again and again:
+  they hand out a block's drops first and only then try to remove it. The wall refused the removal, so the block
+  stayed and could be mined once more, for the pixel blocks and the wall's own blocks alike.
+- While a wall shows a billboard, its blocks are now unbreakable like bedrock, so such tools and machines skip them.
+  For mods that don't check that, the blocks give no items and no experience, whoever asks.
+- An enderman can no longer carry off a copy of a wall block, sand or gravel in a wall no longer falls while the wall
+  is shown, and carving a pumpkin pixel gives no seeds.
+- Hitting a wall block still shows "protected" right away. After Restore the wall mines as normal again.
+
 ## Billboard Engine 2.0.0 for Minecraft 26.3 (Fabric)
 
 **Install:** put `billboard-2.0.0.jar` into the `mods` folder, together with
