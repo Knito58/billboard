@@ -3,6 +3,10 @@
 	"package": "de.knito.billboard.mixin",
 	"compatibilityLevel": "JAVA_25",
 	"mixins": [
+		"BlockMixin",
+		"BlockStateBaseMixin",
+		"EndermanTakeBlockGoalMixin",
+		"FallingBlockMixin",
 		"LevelMixin",
 		"PistonStructureResolverMixin",
 		"ServerExplosionMixin"
