@@ -4,6 +4,11 @@ name: Release
 
 on:
   workflow_dispatch:
+    inputs:
+      label:
+        description: "Optional word after the release title, e.g. bugfix"
+        required: false
+        default: ""
   push:
     tags:
       - "v*"
@@ -40,7 +45,7 @@ jobs:
         with:
           tag_name: ${{ env.TAG }}
           target_commitish: ${{ github.sha }}
-          name: Billboard Engine ${{ env.VERSION }} for Minecraft 26.3
+          name: Billboard Engine ${{ env.VERSION }} for Minecraft 26.3${{ inputs.label && format(' ({0})', inputs.label) || '' }}
           body_path: CHANGELOG.md
           files: |
             build/libs/billboard-*.jar

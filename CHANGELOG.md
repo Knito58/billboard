@@ -1,5 +1,7 @@
 ## Billboard Engine 2.0.1 for Minecraft 26.3 (Fabric)
 
+**Bugfix release.** Closes a duplication bug on servers; recommended for everyone on 2.0.0.
+
 **Install:** put `billboard-2.0.1.jar` into the `mods` folder, together with
 [Fabric API](https://modrinth.com/mod/fabric-api). Needs Fabric Loader 0.19.5 or newer and Java 25.
 Optional: [Billboard API](https://github.com/Knito58/Billboard-API) 0.1.0 or newer for Lua, and
